@@ -453,10 +453,42 @@ export interface Database {
           name: string;
           tagline: string | null;
           description: string | null;
+          /** Legacy column — kept for backward compatibility. */
           address: string | null;
+          /** Legacy column — kept for backward compatibility. */
           phone: string | null;
+          /** Legacy column — kept for backward compatibility. */
           email: string | null;
           logo_url: string | null;
+          /** Phase 12C */
+          short_description: string | null;
+          street_address: string | null;
+          city: string | null;
+          state: string | null;
+          country: string | null;
+          postal_code: string | null;
+          google_maps_url: string | null;
+          primary_phone: string | null;
+          secondary_phone: string | null;
+          primary_email: string | null;
+          secondary_email: string | null;
+          whatsapp_number: string | null;
+          reservation_phone: string | null;
+          reservation_email: string | null;
+          website_url: string | null;
+          price_range: string | null;
+          cuisine_type: string | null;
+          established_year: string | null;
+          holiday_notice: string | null;
+          special_announcement: string | null;
+          reservation_message: string | null;
+          delivery_available: boolean;
+          takeaway_available: boolean;
+          outdoor_seating: boolean;
+          private_dining: boolean;
+          parking_available: boolean;
+          wheelchair_accessible: boolean;
+          pet_friendly: boolean;
           updated_at: string;
         };
         Insert: {
@@ -468,6 +500,34 @@ export interface Database {
           phone?: string | null;
           email?: string | null;
           logo_url?: string | null;
+          short_description?: string | null;
+          street_address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          country?: string | null;
+          postal_code?: string | null;
+          google_maps_url?: string | null;
+          primary_phone?: string | null;
+          secondary_phone?: string | null;
+          primary_email?: string | null;
+          secondary_email?: string | null;
+          whatsapp_number?: string | null;
+          reservation_phone?: string | null;
+          reservation_email?: string | null;
+          website_url?: string | null;
+          price_range?: string | null;
+          cuisine_type?: string | null;
+          established_year?: string | null;
+          holiday_notice?: string | null;
+          special_announcement?: string | null;
+          reservation_message?: string | null;
+          delivery_available?: boolean;
+          takeaway_available?: boolean;
+          outdoor_seating?: boolean;
+          private_dining?: boolean;
+          parking_available?: boolean;
+          wheelchair_accessible?: boolean;
+          pet_friendly?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["restaurant_info"]["Insert"]>;

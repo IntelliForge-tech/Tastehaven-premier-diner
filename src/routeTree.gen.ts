@@ -29,6 +29,7 @@ import { Route as AdminAuthenticatedMenuNewRouteImport } from './routes/admin/_a
 import { Route as AdminAuthenticatedGalleryNewRouteImport } from './routes/admin/_authenticated/gallery/new'
 import { Route as AdminAuthenticatedContentHeroRouteImport } from './routes/admin/_authenticated/content/hero'
 import { Route as AdminAuthenticatedContentAboutRouteImport } from './routes/admin/_authenticated/content/about'
+import { Route as AdminAuthenticatedContentRestaurantInformationRouteImport } from './routes/admin/_authenticated/content/restaurant-information'
 import { Route as AdminAuthenticatedChefsNewRouteImport } from './routes/admin/_authenticated/chefs/new'
 import { Route as AdminAuthenticatedTestimonialsTestimonialIdEditRouteImport } from './routes/admin/_authenticated/testimonials/$testimonialId/edit'
 import { Route as AdminAuthenticatedOffersOfferIdEditRouteImport } from './routes/admin/_authenticated/offers/$offerId/edit'
@@ -151,6 +152,12 @@ const AdminAuthenticatedContentAboutRoute =
     path: '/content/about',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
+const AdminAuthenticatedContentRestaurantInformationRoute =
+  AdminAuthenticatedContentRestaurantInformationRouteImport.update({
+    id: '/content/restaurant-information',
+    path: '/content/restaurant-information',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
 const AdminAuthenticatedChefsNewRoute =
   AdminAuthenticatedChefsNewRouteImport.update({
     id: '/chefs/new',
@@ -199,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
   '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
   '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -226,6 +234,7 @@ export interface FileRoutesByTo {
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
   '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
   '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -255,6 +264,7 @@ export interface FileRoutesById {
   '/admin/_authenticated/chefs/new': typeof AdminAuthenticatedChefsNewRoute
   '/admin/_authenticated/content/about': typeof AdminAuthenticatedContentAboutRoute
   '/admin/_authenticated/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/_authenticated/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/_authenticated/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/_authenticated/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/_authenticated/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/_authenticated/chefs/new'
     | '/admin/_authenticated/content/about'
     | '/admin/_authenticated/content/hero'
+    | '/admin/_authenticated/content/restaurant-information'
     | '/admin/_authenticated/gallery/new'
     | '/admin/_authenticated/menu/new'
     | '/admin/_authenticated/offers/new'
@@ -506,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthenticatedContentAboutRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
+    '/admin/_authenticated/content/restaurant-information': {
+      id: '/admin/_authenticated/content/restaurant-information'
+      path: '/content/restaurant-information'
+      fullPath: '/admin/content/restaurant-information'
+      preLoaderRoute: typeof AdminAuthenticatedContentRestaurantInformationRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
     '/admin/_authenticated/chefs/new': {
       id: '/admin/_authenticated/chefs/new'
       path: '/chefs/new'
@@ -559,6 +577,7 @@ interface AdminAuthenticatedRouteChildren {
   AdminAuthenticatedChefsNewRoute: typeof AdminAuthenticatedChefsNewRoute
   AdminAuthenticatedContentAboutRoute: typeof AdminAuthenticatedContentAboutRoute
   AdminAuthenticatedContentHeroRoute: typeof AdminAuthenticatedContentHeroRoute
+  AdminAuthenticatedContentRestaurantInformationRoute: typeof AdminAuthenticatedContentRestaurantInformationRoute
   AdminAuthenticatedGalleryNewRoute: typeof AdminAuthenticatedGalleryNewRoute
   AdminAuthenticatedMenuNewRoute: typeof AdminAuthenticatedMenuNewRoute
   AdminAuthenticatedOffersNewRoute: typeof AdminAuthenticatedOffersNewRoute
@@ -585,6 +604,7 @@ const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
   AdminAuthenticatedChefsNewRoute: AdminAuthenticatedChefsNewRoute,
   AdminAuthenticatedContentAboutRoute: AdminAuthenticatedContentAboutRoute,
   AdminAuthenticatedContentHeroRoute: AdminAuthenticatedContentHeroRoute,
+  AdminAuthenticatedContentRestaurantInformationRoute: AdminAuthenticatedContentRestaurantInformationRoute,
   AdminAuthenticatedGalleryNewRoute: AdminAuthenticatedGalleryNewRoute,
   AdminAuthenticatedMenuNewRoute: AdminAuthenticatedMenuNewRoute,
   AdminAuthenticatedOffersNewRoute: AdminAuthenticatedOffersNewRoute,

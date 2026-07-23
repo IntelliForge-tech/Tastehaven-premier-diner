@@ -9,6 +9,7 @@ import {
   Percent,
   Quote,
   Settings,
+  Store,
   UtensilsCrossed,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -39,5 +40,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Contact Messages", to: "/admin/messages", icon: Mail },
   { label: "Hero Section", to: "/admin/content/hero", icon: LayoutTemplate },
   { label: "About Section", to: "/admin/content/about", icon: LayoutTemplate },
+  { label: "Restaurant Information", to: "/admin/content/restaurant-information", icon: Store },
   { label: "Restaurant Settings", to: "/admin/settings", icon: Settings },
 ];

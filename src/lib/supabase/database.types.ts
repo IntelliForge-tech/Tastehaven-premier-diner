@@ -363,20 +363,51 @@ export interface Database {
         Row: {
           id: string;
           headline: string;
+          /** Phase 12A: highlighted word(s) rendered in gold on the second heading line. */
+          headline_highlight: string | null;
+          /** Phase 12A: plain text after the highlighted word on the second line. */
+          headline_suffix: string | null;
+          /** Phase 12A: small badge text shown above the heading. */
+          badge_text: string | null;
+          /** Phase 12A: description paragraph beneath the heading. */
+          description: string | null;
+          /** Phase 12A: primary CTA button label. */
+          primary_button_text: string | null;
+          /** Phase 12A: primary CTA target (anchor id or URL). */
+          primary_button_link: string | null;
+          /** Phase 12A: secondary CTA button label. */
+          secondary_button_text: string | null;
+          /** Phase 12A: secondary CTA target (anchor id or URL). */
+          secondary_button_link: string | null;
+          background_image_url: string | null;
+          /** Phase 12A: gradient overlay darkness 0–100. */
+          overlay_opacity: number;
+          /** Phase 12A: when false the entire Hero section is hidden. */
+          is_visible: boolean;
+          updated_at: string;
+          // Legacy columns kept for backward compatibility:
           subheadline: string | null;
           cta_text: string | null;
           cta_link: string | null;
-          background_image_url: string | null;
-          updated_at: string;
         };
         Insert: {
           id?: string;
           headline: string;
+          headline_highlight?: string | null;
+          headline_suffix?: string | null;
+          badge_text?: string | null;
+          description?: string | null;
+          primary_button_text?: string | null;
+          primary_button_link?: string | null;
+          secondary_button_text?: string | null;
+          secondary_button_link?: string | null;
+          background_image_url?: string | null;
+          overlay_opacity?: number;
+          is_visible?: boolean;
+          updated_at?: string;
           subheadline?: string | null;
           cta_text?: string | null;
           cta_link?: string | null;
-          background_image_url?: string | null;
-          updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["hero_settings"]["Insert"]>;
         Relationships: [];
@@ -386,17 +417,30 @@ export interface Database {
         Row: {
           id: string;
           headline: string;
+          /** Phase 12B: small uppercase kicker above the heading — e.g. "Our Story". */
+          section_title: string | null;
           description: string | null;
           image_url: string | null;
+          /** jsonb array of { icon, title, description } objects. */
           features: Json;
+          /** Phase 12B: year shown in the decorative badge overlay — e.g. "2012". */
+          badge_year: string | null;
+          /** Phase 12B: subtitle shown in the decorative badge overlay. */
+          badge_text: string | null;
+          /** Phase 12B: when false the entire About section is hidden on the public site. */
+          is_visible: boolean;
           updated_at: string;
         };
         Insert: {
           id?: string;
           headline: string;
+          section_title?: string | null;
           description?: string | null;
           image_url?: string | null;
           features?: Json;
+          badge_year?: string | null;
+          badge_text?: string | null;
+          is_visible?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["about_settings"]["Insert"]>;

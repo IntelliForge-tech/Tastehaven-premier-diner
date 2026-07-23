@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, CalendarCheck } from "lucide-react";
+import type { MouseEvent } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
+import { ReservationActionDialog } from "@/components/admin/reservations/ReservationActionDialog";
 import { ReservationRow } from "@/components/admin/reservations/ReservationRow";
 import { ReservationsSkeleton } from "@/components/admin/reservations/ReservationsSkeleton";
 import { EmptyState } from "@/components/admin/dashboard/EmptyState";
@@ -8,7 +12,9 @@ import { Breadcrumbs } from "@/components/admin/page/Breadcrumbs";
 import { PageHeader } from "@/components/admin/page/PageHeader";
 import { SectionContainer } from "@/components/admin/page/SectionContainer";
 import { Button } from "@/components/common/Button";
+import { useDeleteReservation } from "@/hooks/useDeleteReservation";
 import { useReservations } from "@/hooks/useReservations";
+import type { ReservationDetail, ReservationItem } from "@/services/reservations.service";
 
 export const Route = createFileRoute("/admin/_authenticated/reservations/")({
   component: AdminReservationsPage,
@@ -17,9 +23,43 @@ export const Route = createFileRoute("/admin/_authenticated/reservations/")({
   }),
 });
 
+/** Maps a list item to the detail shape required by ReservationActionDialog. */
+function toReservationDetail(item: ReservationItem): ReservationDetail {
+  return {
+    ...item,
+    adminNotes: null,
+    updatedAt: item.createdAt,
+  };
+}
+
 function AdminReservationsPage() {
   const { items, isLoading, error, refetch } = useReservations();
   const navigate = useNavigate();
+  const { isDeleting, deleteItem } = useDeleteReservation();
+  const [reservationToDelete, setReservationToDelete] = useState<ReservationItem | null>(null);
+
+  function navigateToDetail(id: string) {
+    navigate({
+      to: "/admin/reservations/$reservationId",
+      params: { reservationId: id },
+    });
+  }
+
+  async function handleDeleteConfirm(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    if (!reservationToDelete) return;
+
+    const result = await deleteItem(reservationToDelete.id, reservationToDelete.status);
+
+    if (!result.success) {
+      toast.error(result.error.message);
+      return;
+    }
+
+    toast.success("Reservation deleted.");
+    setReservationToDelete(null);
+    refetch();
+  }
 
   return (
     <div className="space-y-6">
@@ -66,12 +106,9 @@ function AdminReservationsPage() {
                   <ReservationRow
                     key={reservation.id}
                     reservation={reservation}
-                    onView={(id) =>
-                      navigate({
-                        to: "/admin/reservations/$reservationId",
-                        params: { reservationId: id },
-                      })
-                    }
+                    onView={navigateToDetail}
+                    onEdit={navigateToDetail}
+                    onDelete={setReservationToDelete}
                   />
                 ))}
               </tbody>
@@ -79,6 +116,14 @@ function AdminReservationsPage() {
           </div>
         )}
       </SectionContainer>
+
+      <ReservationActionDialog
+        reservation={reservationToDelete ? toReservationDetail(reservationToDelete) : null}
+        action={reservationToDelete ? "delete" : null}
+        isLoading={isDeleting}
+        onOpenChange={(open) => !open && setReservationToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

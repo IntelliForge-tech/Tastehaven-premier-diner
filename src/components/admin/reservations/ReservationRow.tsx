@@ -4,10 +4,16 @@ import { ReservationStatusBadge } from "@/components/admin/reservations/Reservat
 import { Button } from "@/components/common/Button";
 import type { ReservationItem } from "@/services/reservations.service";
 
+const DELETABLE_STATUSES: ReservationItem["status"][] = ["completed", "cancelled", "no_show"];
+
 interface ReservationRowProps {
   reservation: ReservationItem;
   /** Navigate to the detail page for this reservation. */
   onView: (id: string) => void;
+  /** Navigate to the detail page for editing (same route as view). */
+  onEdit: (id: string) => void;
+  /** Open the delete confirmation dialog for this reservation. */
+  onDelete: (reservation: ReservationItem) => void;
 }
 
 /** Formats a DB time string "HH:MM:SS" to "h:mm AM/PM" for display. */
@@ -33,9 +39,11 @@ function formatDate(date: string): string {
  * One row in the Reservations table. Displays only columns that exist
  * in database.types.ts — no invented fields. `admin_notes` is
  * intentionally excluded (internal, belongs on the detail page).
- * View button is now wired (Phase 11B); Edit/Delete remain disabled.
+ * View and Edit navigate to the detail page; Delete opens the
+ * confirmation dialog (terminal statuses only).
  */
-export function ReservationRow({ reservation, onView }: ReservationRowProps) {
+export function ReservationRow({ reservation, onView, onEdit, onDelete }: ReservationRowProps) {
+  const canDelete = DELETABLE_STATUSES.includes(reservation.status);
   return (
     <tr className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors">
       {/* Customer */}
@@ -98,17 +106,18 @@ export function ReservationRow({ reservation, onView }: ReservationRowProps) {
           <Button
             type="button"
             variant="outline"
-            disabled
             aria-label={`Edit reservation for ${reservation.customerName}`}
-            className="inline-flex size-8 items-center justify-center p-0 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => onEdit(reservation.id)}
+            className="inline-flex size-8 items-center justify-center p-0"
           >
             <Pencil className="size-3.5" aria-hidden="true" />
           </Button>
           <Button
             type="button"
             variant="outline"
-            disabled
+            disabled={!canDelete}
             aria-label={`Delete reservation for ${reservation.customerName}`}
+            onClick={() => onDelete(reservation)}
             className="inline-flex size-8 items-center justify-center p-0 text-destructive disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Trash2 className="size-3.5" aria-hidden="true" />

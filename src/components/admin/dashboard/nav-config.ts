@@ -4,6 +4,7 @@ import {
   HelpCircle,
   Image,
   LayoutDashboard,
+  LayoutTemplate,
   Mail,
   Percent,
   Quote,
@@ -23,6 +24,8 @@ export interface AdminNavItem {
  * Full admin sidebar navigation. `exact: true` on Dashboard only —
  * `/admin` is a path-prefix of every other admin route, so without it
  * the Dashboard row would stay highlighted on every admin page.
+ *
+ * Phase 12A adds the Hero Section entry under Content Management.
  */
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard, exact: true },
@@ -34,5 +37,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Offers", to: "/admin/offers", icon: Percent },
   { label: "FAQ", to: "/admin/faq", icon: HelpCircle },
   { label: "Contact Messages", to: "/admin/messages", icon: Mail },
+  { label: "Hero Section", to: "/admin/content/hero", icon: LayoutTemplate },
+  { label: "About Section", to: "/admin/content/about", icon: LayoutTemplate },
   { label: "Restaurant Settings", to: "/admin/settings", icon: Settings },
 ];

@@ -27,6 +27,8 @@ import { Route as AdminAuthenticatedReservationsReservationIdRouteImport } from 
 import { Route as AdminAuthenticatedOffersNewRouteImport } from './routes/admin/_authenticated/offers/new'
 import { Route as AdminAuthenticatedMenuNewRouteImport } from './routes/admin/_authenticated/menu/new'
 import { Route as AdminAuthenticatedGalleryNewRouteImport } from './routes/admin/_authenticated/gallery/new'
+import { Route as AdminAuthenticatedContentHeroRouteImport } from './routes/admin/_authenticated/content/hero'
+import { Route as AdminAuthenticatedContentAboutRouteImport } from './routes/admin/_authenticated/content/about'
 import { Route as AdminAuthenticatedChefsNewRouteImport } from './routes/admin/_authenticated/chefs/new'
 import { Route as AdminAuthenticatedTestimonialsTestimonialIdEditRouteImport } from './routes/admin/_authenticated/testimonials/$testimonialId/edit'
 import { Route as AdminAuthenticatedOffersOfferIdEditRouteImport } from './routes/admin/_authenticated/offers/$offerId/edit'
@@ -137,6 +139,18 @@ const AdminAuthenticatedGalleryNewRoute =
     path: '/gallery/new',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
+const AdminAuthenticatedContentHeroRoute =
+  AdminAuthenticatedContentHeroRouteImport.update({
+    id: '/content/hero',
+    path: '/content/hero',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedContentAboutRoute =
+  AdminAuthenticatedContentAboutRouteImport.update({
+    id: '/content/about',
+    path: '/content/about',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
 const AdminAuthenticatedChefsNewRoute =
   AdminAuthenticatedChefsNewRouteImport.update({
     id: '/chefs/new',
@@ -183,6 +197,8 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin/': typeof AdminAuthenticatedIndexRoute
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
+  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -208,6 +224,8 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin': typeof AdminAuthenticatedIndexRoute
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
+  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -235,6 +253,8 @@ export interface FileRoutesById {
   '/admin/_authenticated/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin/_authenticated/': typeof AdminAuthenticatedIndexRoute
   '/admin/_authenticated/chefs/new': typeof AdminAuthenticatedChefsNewRoute
+  '/admin/_authenticated/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/_authenticated/content/hero': typeof AdminAuthenticatedContentHeroRoute
   '/admin/_authenticated/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/_authenticated/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/_authenticated/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -263,6 +283,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/'
     | '/admin/chefs/new'
+    | '/admin/content/about'
+    | '/admin/content/hero'
     | '/admin/gallery/new'
     | '/admin/menu/new'
     | '/admin/offers/new'
@@ -288,6 +310,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin'
     | '/admin/chefs/new'
+    | '/admin/content/about'
+    | '/admin/content/hero'
     | '/admin/gallery/new'
     | '/admin/menu/new'
     | '/admin/offers/new'
@@ -314,6 +338,8 @@ export interface FileRouteTypes {
     | '/admin/_authenticated/settings'
     | '/admin/_authenticated/'
     | '/admin/_authenticated/chefs/new'
+    | '/admin/_authenticated/content/about'
+    | '/admin/_authenticated/content/hero'
     | '/admin/_authenticated/gallery/new'
     | '/admin/_authenticated/menu/new'
     | '/admin/_authenticated/offers/new'
@@ -466,6 +492,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthenticatedGalleryNewRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
+    '/admin/_authenticated/content/hero': {
+      id: '/admin/_authenticated/content/hero'
+      path: '/content/hero'
+      fullPath: '/admin/content/hero'
+      preLoaderRoute: typeof AdminAuthenticatedContentHeroRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/content/about': {
+      id: '/admin/_authenticated/content/about'
+      path: '/content/about'
+      fullPath: '/admin/content/about'
+      preLoaderRoute: typeof AdminAuthenticatedContentAboutRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
     '/admin/_authenticated/chefs/new': {
       id: '/admin/_authenticated/chefs/new'
       path: '/chefs/new'
@@ -517,6 +557,8 @@ interface AdminAuthenticatedRouteChildren {
   AdminAuthenticatedSettingsRoute: typeof AdminAuthenticatedSettingsRoute
   AdminAuthenticatedIndexRoute: typeof AdminAuthenticatedIndexRoute
   AdminAuthenticatedChefsNewRoute: typeof AdminAuthenticatedChefsNewRoute
+  AdminAuthenticatedContentAboutRoute: typeof AdminAuthenticatedContentAboutRoute
+  AdminAuthenticatedContentHeroRoute: typeof AdminAuthenticatedContentHeroRoute
   AdminAuthenticatedGalleryNewRoute: typeof AdminAuthenticatedGalleryNewRoute
   AdminAuthenticatedMenuNewRoute: typeof AdminAuthenticatedMenuNewRoute
   AdminAuthenticatedOffersNewRoute: typeof AdminAuthenticatedOffersNewRoute
@@ -541,6 +583,8 @@ const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
   AdminAuthenticatedSettingsRoute: AdminAuthenticatedSettingsRoute,
   AdminAuthenticatedIndexRoute: AdminAuthenticatedIndexRoute,
   AdminAuthenticatedChefsNewRoute: AdminAuthenticatedChefsNewRoute,
+  AdminAuthenticatedContentAboutRoute: AdminAuthenticatedContentAboutRoute,
+  AdminAuthenticatedContentHeroRoute: AdminAuthenticatedContentHeroRoute,
   AdminAuthenticatedGalleryNewRoute: AdminAuthenticatedGalleryNewRoute,
   AdminAuthenticatedMenuNewRoute: AdminAuthenticatedMenuNewRoute,
   AdminAuthenticatedOffersNewRoute: AdminAuthenticatedOffersNewRoute,

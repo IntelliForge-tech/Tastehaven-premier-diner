@@ -4,35 +4,9 @@ import { toast } from "sonner";
 import { Field } from "@/components/common/Field";
 import { SectionTitle } from "@/components/common/SectionTitle";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { useRestaurantInformation } from "@/hooks/useRestaurantInformation";
-import { ORDERED_DAYS, DAY_NAMES } from "@/services/restaurant-information.service";
+import { RESERVE_INFO } from "@/utils/constants";
 
 export function Reservation() {
-  const { data } = useRestaurantInformation();
-  const info = data?.info;
-  const hours = data?.hours ?? [];
-
-  const reservationPhone = info?.reservationPhone ?? info?.primaryPhone ?? "+1 (415) 555 0138";
-  const reservationMessage =
-    info?.reservationMessage ??
-    "Reservations open daily from 5 PM. For groups of 8+, please call us directly.";
-
-  const address = info
-    ? [info.streetAddress, info.city].filter(Boolean).join(", ")
-    : "42 Amber Street, Downtown District";
-
-  // Build opening hours summary for display
-  const hoursLabel =
-    hours.length > 0
-      ? buildHoursSummary(hours)
-      : "Mon–Sun, 5 PM – 12 AM";
-
-  const reserveInfo = [
-    { i: "fa-clock", t: "Opening Hours", d: hoursLabel },
-    { i: "fa-phone", t: "Direct Line", d: reservationPhone },
-    { i: "fa-location-dot", t: "Location", d: address },
-  ];
-
   const onReserve = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -128,11 +102,12 @@ export function Reservation() {
           </h2>
 
           <p className="mt-4 text-muted-foreground">
-            {reservationMessage}
+            Reservations open daily from 5 PM. For groups of 8+, please call us
+            directly.
           </p>
 
           <div className="mt-8 space-y-4">
-            {reserveInfo.map((r) => (
+            {RESERVE_INFO.map((r) => (
               <div
                 key={r.t}
                 className="flex items-start gap-4 rounded-xl border border-border bg-card/40 p-4"
@@ -234,30 +209,4 @@ export function Reservation() {
       </div>
     </section>
   );
-}
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-function fmt(time: string | null): string {
-  if (!time) return "";
-  const [hStr, mStr] = time.split(":");
-  const h = parseInt(hStr, 10);
-  const suffix = h >= 12 ? "PM" : "AM";
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${h12}:${mStr ?? "00"} ${suffix}`;
-}
-
-function buildHoursSummary(hours: import("@/services/restaurant-information.service").OpeningHour[]): string {
-  const open = ORDERED_DAYS
-    .map((day) => hours.find((h) => h.dayOfWeek === day))
-    .filter((h): h is NonNullable<typeof h> => !!h && !h.isClosed);
-
-  if (open.length === 0) return "Currently closed";
-  if (open.length === 7) {
-    const first = open[0];
-    return `Daily, ${fmt(first.openTime)} – ${fmt(first.closeTime)}`;
-  }
-
-  const firstDay = open[0];
-  const lastDay = open[open.length - 1];
-  return `${DAY_NAMES[firstDay.dayOfWeek as import("@/services/restaurant-information.service").DayOfWeek].slice(0, 3)}–${DAY_NAMES[lastDay.dayOfWeek as import("@/services/restaurant-information.service").DayOfWeek].slice(0, 3)}, ${fmt(firstDay.openTime)} – ${fmt(firstDay.closeTime)}`;
 }

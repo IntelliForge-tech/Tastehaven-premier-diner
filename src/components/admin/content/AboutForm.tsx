@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GripVertical, ImagePlus, Loader2, Plus, RotateCcw, Save, Trash2, X } from "lucide-react";
+import { ImagePlus, Loader2, Plus, RotateCcw, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -23,44 +23,53 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateAbout } from "@/hooks/useUpdateAbout";
-import { DEFAULT_FEATURES } from "@/services/about.service";
-import type { AboutContent, AboutFeature } from "@/services/about.service";
+import type { AboutContent } from "@/services/about.service";
 
 interface AboutFormProps {
+  /** Current saved about data — used to pre-fill the form and as baseline for reset. */
   about: AboutContent;
+  /** Called after a successful save so the parent can refetch and update the preview. */
   onSuccess: () => void;
+  /**
+   * Optional callback invoked on every render with the current `isDirty`
+   * state. Used by the parent page to drive the navigation blocker without
+   * lifting the form state out of this component.
+   */
   onDirtyChange?: (isDirty: boolean) => void;
+}
+
+function buildDefaultValues(about: AboutContent): AboutFormInput {
+  return {
+    sectionTitle: about.sectionTitle,
+    headline: about.headline,
+    description: about.description ?? "",
+    badgeLabel: about.badgeLabel ?? "",
+    badgeYear: about.badgeYear ?? "",
+    badgeSubtext: about.badgeSubtext ?? "",
+    features: about.features,
+    isVisible: about.isVisible,
+    imageFile: null,
+    imageCleared: false,
+  };
 }
 
 /**
  * About Settings form — Phase 12B.
  *
- * Single form component for the About singleton. Follows the exact same
- * structure as HeroForm (Phase 12A): React Hook Form + Zod resolver,
- * image upload sub-component, feature cards array editor, Sonner toasts,
- * and useUpdateAbout() for save orchestration.
+ * Single form component (no create/edit split — there is always exactly
+ * one about row). Follows the same structure as HeroForm:
+ * React Hook Form + Zod resolver, custom ImageFileInput sub-component,
+ * Sonner toasts, and useUpdateAbout() for the save orchestration.
  *
- * `onDirtyChange` mirrors HeroForm's pattern so the parent page can
- * drive the TanStack Router navigation blocker without lifting form state.
+ * Unsaved-changes guard: `form.formState.isDirty` is used by the parent
+ * page to warn before navigation.
  */
 export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
   const { updateItem, isSubmitting } = useUpdateAbout();
 
-  const defaultValues: AboutFormInput = {
-    sectionTitle: about.sectionTitle,
-    heading: about.heading,
-    description: about.description ?? "",
-    features: about.features.length > 0 ? about.features : DEFAULT_FEATURES,
-    badgeYear: about.badgeYear ?? "",
-    badgeText: about.badgeText ?? "",
-    isVisible: about.isVisible,
-    imageFile: null,
-    imageCleared: false,
-  };
-
   const form = useForm<AboutFormInput, unknown, AboutFormValues>({
     resolver: zodResolver(aboutSchema),
-    defaultValues,
+    defaultValues: buildDefaultValues(about),
     mode: "onTouched",
   });
 
@@ -69,36 +78,21 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
     name: "features",
   });
 
-  // Re-sync when parent refetches after a successful save.
+  // Keep form in sync when the parent refetches after a successful save.
   useEffect(() => {
-    form.reset({
-      sectionTitle: about.sectionTitle,
-      heading: about.heading,
-      description: about.description ?? "",
-      features: about.features.length > 0 ? about.features : DEFAULT_FEATURES,
-      badgeYear: about.badgeYear ?? "",
-      badgeText: about.badgeText ?? "",
-      isVisible: about.isVisible,
-      imageFile: null,
-      imageCleared: false,
-    });
+    form.reset(buildDefaultValues(about));
   }, [about, form]);
-
-  const isDirty = form.formState.isDirty;
-
-  useEffect(() => {
-    onDirtyChange?.(isDirty);
-  }, [isDirty, onDirtyChange]);
 
   async function onSubmit(values: AboutFormValues) {
     const result = await updateItem(
       {
-        sectionTitle: values.sectionTitle ?? "Our Story",
-        heading: values.heading,
+        sectionTitle: values.sectionTitle,
+        headline: values.headline,
         description: values.description ?? "",
-        features: values.features as AboutFeature[],
+        badgeLabel: values.badgeLabel ?? "",
         badgeYear: values.badgeYear ?? "",
-        badgeText: values.badgeText ?? "",
+        badgeSubtext: values.badgeSubtext ?? "",
+        features: values.features,
         isVisible: values.isVisible,
         imageFile: values.imageFile ?? null,
         imageCleared: values.imageCleared ?? false,
@@ -119,10 +113,12 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
     form.reset();
   }
 
-  function handleAddFeature() {
-    if (fields.length >= 4) return;
-    append({ icon: "star", title: "", description: "" });
-  }
+  const isDirty = form.formState.isDirty;
+
+  // Sync isDirty upward to the parent page for the navigation blocker.
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   return (
     <Form {...form}>
@@ -154,10 +150,10 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
           )}
         />
 
-        {/* ── Headings ─────────────────────────────────────────────────── */}
+        {/* ── Heading fields ───────────────────────────────────────────── */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Section Heading
+            Heading
           </h3>
 
           <FormField
@@ -165,7 +161,9 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
             name="sectionTitle"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="about-section-title">Section Label</FormLabel>
+                <FormLabel htmlFor="about-section-title">
+                  Section Label <span aria-hidden="true" className="text-destructive">*</span>
+                </FormLabel>
                 <FormControl>
                   <Input
                     id="about-section-title"
@@ -175,7 +173,7 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
                   />
                 </FormControl>
                 <FormDescription className="text-xs">
-                  Small uppercase kicker text shown above the main heading.
+                  Small label displayed above the main heading.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -184,21 +182,23 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
 
           <FormField
             control={form.control}
-            name="heading"
+            name="headline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="about-heading">
+                <FormLabel htmlFor="about-headline">
                   Main Heading <span aria-hidden="true" className="text-destructive">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input
-                    id="about-heading"
+                    id="about-headline"
                     placeholder="e.g. A haven for the curious palate."
-                    autoFocus
                     disabled={isSubmitting}
                     {...field}
                   />
                 </FormControl>
+                <FormDescription className="text-xs">
+                  The primary heading displayed in the About section.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -213,101 +213,15 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
                 <FormControl>
                   <Textarea
                     id="about-description"
-                    placeholder="A paragraph describing the restaurant's story and philosophy."
+                    placeholder="Born from a love of the neighborhood market…"
                     rows={4}
                     disabled={isSubmitting}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* ── Feature Cards ─────────────────────────────────────────────── */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Feature Cards
-            </h3>
-            {fields.length < 4 && (
-              <button
-                type="button"
-                onClick={handleAddFeature}
-                disabled={isSubmitting}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Plus className="size-3" aria-hidden="true" />
-                Add Card
-              </button>
-            )}
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            Up to 4 cards shown in a 2×2 grid below the description. Use{" "}
-            <a
-              href="https://fontawesome.com/icons?s=solid&o=r"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              FontAwesome solid icon names
-            </a>{" "}
-            without the "fa-" prefix — e.g. <code className="rounded bg-muted px-1 text-[11px]">seedling</code>.
-          </p>
-
-          <div className="space-y-3">
-            {fields.map((field, index) => (
-              <FeatureCardEditor
-                key={field.id}
-                index={index}
-                isSubmitting={isSubmitting}
-                canRemove={fields.length > 1}
-                onRemove={() => remove(index)}
-                form={form}
-              />
-            ))}
-          </div>
-
-          {form.formState.errors.features?.root && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.features.root.message}
-            </p>
-          )}
-        </div>
-
-        {/* ── About Image ──────────────────────────────────────────────── */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            About Image
-          </h3>
-
-          <FormField
-            control={form.control}
-            name="imageFile"
-            render={({ field: { value, onChange, ...field } }) => (
-              <FormItem>
-                <FormLabel htmlFor="about-image">Section Image</FormLabel>
-                <FormControl>
-                  <AboutImageInput
-                    {...field}
-                    id="about-image"
-                    value={value ?? null}
-                    onChange={onChange}
-                    disabled={isSubmitting}
-                    existingImageUrl={about.imageUrl}
-                    isCleared={form.watch("imageCleared")}
-                    onClear={() => {
-                      onChange(null);
-                      form.setValue("imageCleared", true, { shouldDirty: true });
-                    }}
-                    onRestore={() => {
-                      onChange(null);
-                      form.setValue("imageCleared", false, { shouldDirty: true });
-                    }}
-                  />
-                </FormControl>
+                <FormDescription className="text-xs">
+                  The paragraph displayed beneath the heading.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -320,16 +234,37 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
             Decorative Badge
           </h3>
           <p className="text-xs text-muted-foreground">
-            The glass card overlaid on the bottom-left of the image. Leave both fields blank to hide it.
+            The small floating card that appears over the image (e.g. "Since · 2012").
+            Leave all fields empty to hide the badge.
           </p>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="badgeLabel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="about-badge-label">Label</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="about-badge-label"
+                      placeholder="e.g. Since"
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">Small uppercase label.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="badgeYear"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="about-badge-year">Year</FormLabel>
+                  <FormLabel htmlFor="about-badge-year">Year / Value</FormLabel>
                   <FormControl>
                     <Input
                       id="about-badge-year"
@@ -338,9 +273,7 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription className="text-xs">
-                    Large gold number in the badge overlay.
-                  </FormDescription>
+                  <FormDescription className="text-xs">Displayed large in gold.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -348,21 +281,19 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
 
             <FormField
               control={form.control}
-              name="badgeText"
+              name="badgeSubtext"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="about-badge-text">Badge Description</FormLabel>
+                  <FormLabel htmlFor="about-badge-subtext">Subtext</FormLabel>
                   <FormControl>
                     <Input
-                      id="about-badge-text"
+                      id="about-badge-subtext"
                       placeholder="e.g. A decade of memorable evenings."
                       disabled={isSubmitting}
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription className="text-xs">
-                    Subtitle text beneath the year.
-                  </FormDescription>
+                  <FormDescription className="text-xs">Small text beneath the year.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -370,7 +301,169 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
           </div>
         </div>
 
-        {/* ── Form Actions ─────────────────────────────────────────────── */}
+        {/* ── Feature Cards ────────────────────────────────────────────── */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Feature Cards
+              </h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Up to 4 cards displayed in the 2×2 grid. Use Font Awesome icon classes (e.g.{" "}
+                <code className="rounded bg-muted px-1 py-0.5 text-[11px]">fa-seedling</code>).
+              </p>
+            </div>
+            {fields.length < 4 && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() =>
+                  append({ icon: "fa-star", title: "", description: "" })
+                }
+                className="inline-flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs"
+              >
+                <Plus className="size-3.5" aria-hidden="true" />
+                Add Card
+              </Button>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="relative rounded-lg border border-border bg-muted/20 p-4"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Card {index + 1}
+                  </span>
+                  {fields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      disabled={isSubmitting}
+                      aria-label={`Remove feature card ${index + 1}`}
+                      className="grid size-7 place-items-center rounded-full border border-destructive/30 text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Trash2 className="size-3.5" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <FormField
+                    control={form.control}
+                    name={`features.${index}.icon`}
+                    render={({ field: f }) => (
+                      <FormItem>
+                        <FormLabel htmlFor={`feature-icon-${index}`} className="text-xs">
+                          Icon Class <span aria-hidden="true" className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id={`feature-icon-${index}`}
+                            placeholder="fa-seedling"
+                            disabled={isSubmitting}
+                            className="text-sm"
+                            {...f}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`features.${index}.title`}
+                    render={({ field: f }) => (
+                      <FormItem>
+                        <FormLabel htmlFor={`feature-title-${index}`} className="text-xs">
+                          Title <span aria-hidden="true" className="text-destructive">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id={`feature-title-${index}`}
+                            placeholder="Fresh Ingredients"
+                            disabled={isSubmitting}
+                            className="text-sm"
+                            {...f}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`features.${index}.description`}
+                    render={({ field: f }) => (
+                      <FormItem>
+                        <FormLabel htmlFor={`feature-desc-${index}`} className="text-xs">
+                          Description
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id={`feature-desc-${index}`}
+                            placeholder="Sourced daily from local farms."
+                            disabled={isSubmitting}
+                            className="text-sm"
+                            {...f}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── About Image ──────────────────────────────────────────────── */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            About Image
+          </h3>
+          <FormField
+            control={form.control}
+            name="imageFile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="sr-only">About Image</FormLabel>
+                <FormControl>
+                  <AboutImageInput
+                    id="about-image"
+                    value={field.value ?? null}
+                    onChange={(file) => {
+                      field.onChange(file);
+                      if (file) {
+                        form.setValue("imageCleared", false);
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    existingImageUrl={about.imageUrl}
+                    isCleared={form.watch("imageCleared")}
+                    onClear={() => {
+                      form.setValue("imageCleared", true, { shouldDirty: true });
+                      field.onChange(null);
+                    }}
+                    onRestore={() => {
+                      form.setValue("imageCleared", false, { shouldDirty: true });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* ── Form actions ─────────────────────────────────────────────── */}
         <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-between">
           <Button
             type="button"
@@ -409,145 +502,7 @@ export function AboutForm({ about, onSuccess, onDirtyChange }: AboutFormProps) {
   );
 }
 
-// ── FeatureCardEditor ─────────────────────────────────────────────────────
-
-import type { UseFormReturn } from "react-hook-form";
-
-interface FeatureCardEditorProps {
-  index: number;
-  isSubmitting: boolean;
-  canRemove: boolean;
-  onRemove: () => void;
-  form: UseFormReturn<AboutFormInput, unknown, AboutFormValues>;
-}
-
-/**
- * Single feature card editor row. Renders three fields (icon, title,
- * description) in a compact card with a drag handle indicator and a
- * remove button. Mirrors the pattern used for array fields in the
- * offers and menu admin forms throughout this project.
- */
-function FeatureCardEditor({
-  index,
-  isSubmitting,
-  canRemove,
-  onRemove,
-  form,
-}: FeatureCardEditorProps) {
-  const iconValue = form.watch(`features.${index}.icon`);
-
-  return (
-    <div className="group rounded-xl border border-border bg-card/50 p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <GripVertical
-          className="size-4 shrink-0 text-muted-foreground/40"
-          aria-hidden="true"
-        />
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Card {index + 1}
-        </span>
-
-        {/* Live icon preview */}
-        {iconValue && (
-          <div className="ml-1 grid size-6 place-items-center rounded-full bg-primary/15 text-primary text-xs">
-            <i className={`fa-solid fa-${iconValue}`} aria-hidden="true" />
-          </div>
-        )}
-
-        {canRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            disabled={isSubmitting}
-            aria-label={`Remove card ${index + 1}`}
-            className="ml-auto grid size-7 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Trash2 className="size-3.5" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <FormField
-          control={form.control}
-          name={`features.${index}.icon`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel
-                htmlFor={`feature-${index}-icon`}
-                className="text-xs"
-              >
-                Icon <span aria-hidden="true" className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  id={`feature-${index}-icon`}
-                  placeholder="seedling"
-                  disabled={isSubmitting}
-                  className="text-sm"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name={`features.${index}.title`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel
-                htmlFor={`feature-${index}-title`}
-                className="text-xs"
-              >
-                Title <span aria-hidden="true" className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  id={`feature-${index}-title`}
-                  placeholder="Fresh Ingredients"
-                  disabled={isSubmitting}
-                  className="text-sm"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name={`features.${index}.description`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel
-                htmlFor={`feature-${index}-description`}
-                className="text-xs"
-              >
-                Description
-              </FormLabel>
-              <FormControl>
-                <Input
-                  id={`feature-${index}-description`}
-                  placeholder="Sourced daily from local farms."
-                  disabled={isSubmitting}
-                  className="text-sm"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="text-xs" />
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ── AboutImageInput ───────────────────────────────────────────────────────
+// ── AboutImageInput ──────────────────────────────────────────────────────────
 
 interface AboutImageInputProps {
   id: string;
@@ -561,9 +516,9 @@ interface AboutImageInputProps {
 }
 
 /**
- * About-specific image input with a portrait-ratio preview to match
- * the About section's 4/5 aspect-ratio image column. Mirrors
- * HeroImageInput from HeroForm — same state machine, same controls.
+ * About-specific image file input with a portrait-ish 4:5 preview to
+ * match the About section's usage. Mirrors HeroImageInput from HeroForm
+ * but with an aspect ratio appropriate for the about section image.
  */
 function AboutImageInput({
   id,
@@ -575,20 +530,20 @@ function AboutImageInput({
   onClear,
   onRestore,
 }: AboutImageInputProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [newFilePreviewUrl, setNewFilePreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!value) {
-      setPreviewUrl(null);
+      setNewFilePreviewUrl(null);
       return;
     }
     const url = URL.createObjectURL(value);
-    setPreviewUrl(url);
+    setNewFilePreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [value]);
 
-  const displayUrl = previewUrl ?? (isCleared ? null : existingImageUrl);
+  const displayUrl = newFilePreviewUrl ?? (isCleared ? null : existingImageUrl);
   const hasNewFile = value !== null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -603,19 +558,19 @@ function AboutImageInput({
 
   return (
     <div className="space-y-3">
-      {/* Preview — portrait ratio to match the About section layout */}
+      {/* Preview */}
       {displayUrl ? (
         <div
           className="relative overflow-hidden rounded-xl border border-border"
-          style={{ aspectRatio: "4/5", maxWidth: "280px" }}
+          style={{ aspectRatio: "4/3", maxWidth: "480px" }}
         >
           <img
             src={displayUrl}
             alt="About section image preview"
             className="h-full w-full object-cover"
           />
-          <div className="absolute bottom-2 left-2 text-xs font-medium text-white/90 drop-shadow">
-            {hasNewFile ? "New image preview" : "Current image"}
+          <div className="absolute bottom-2 left-2 rounded-md bg-background/80 px-2 py-1 text-xs font-medium backdrop-blur">
+            {hasNewFile ? "New image preview" : "Current about image"}
           </div>
           {hasNewFile && (
             <button
@@ -632,11 +587,11 @@ function AboutImageInput({
       ) : (
         <div
           className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground"
-          style={{ aspectRatio: "4/5", maxWidth: "280px" }}
+          style={{ aspectRatio: "4/3", maxWidth: "480px" }}
           aria-hidden="true"
         >
           <ImagePlus className="size-8" />
-          <span className="text-sm">No image set</span>
+          <span className="text-sm">No about image</span>
         </div>
       )}
 
@@ -689,7 +644,7 @@ function AboutImageInput({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        JPEG, PNG, WebP, or GIF · Max 5 MB · Recommended: portrait ratio (4:5)
+        JPEG, PNG, WebP, or GIF · Max 5 MB · Recommended: 900 × 1100 px (portrait)
       </p>
     </div>
   );

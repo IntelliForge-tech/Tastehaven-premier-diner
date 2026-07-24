@@ -417,29 +417,31 @@ export interface Database {
         Row: {
           id: string;
           headline: string;
-          /** Phase 12B: small uppercase kicker above the heading — e.g. "Our Story". */
-          section_title: string | null;
           description: string | null;
           image_url: string | null;
-          /** jsonb array of { icon, title, description } objects. */
           features: Json;
-          /** Phase 12B: year shown in the decorative badge overlay — e.g. "2012". */
+          /** Phase 12B: small label above the heading, e.g. "Our Story". */
+          section_title: string | null;
+          /** Phase 12B: badge label, e.g. "Since". */
+          badge_label: string | null;
+          /** Phase 12B: badge year / value displayed large in gold, e.g. "2012". */
           badge_year: string | null;
-          /** Phase 12B: subtitle shown in the decorative badge overlay. */
-          badge_text: string | null;
-          /** Phase 12B: when false the entire About section is hidden on the public site. */
+          /** Phase 12B: small text below badge year. */
+          badge_subtext: string | null;
+          /** Phase 12B: when false the entire About section is hidden. */
           is_visible: boolean;
           updated_at: string;
         };
         Insert: {
           id?: string;
           headline: string;
-          section_title?: string | null;
           description?: string | null;
           image_url?: string | null;
           features?: Json;
+          section_title?: string | null;
+          badge_label?: string | null;
           badge_year?: string | null;
-          badge_text?: string | null;
+          badge_subtext?: string | null;
           is_visible?: boolean;
           updated_at?: string;
         };
@@ -453,42 +455,10 @@ export interface Database {
           name: string;
           tagline: string | null;
           description: string | null;
-          /** Legacy column — kept for backward compatibility. */
           address: string | null;
-          /** Legacy column — kept for backward compatibility. */
           phone: string | null;
-          /** Legacy column — kept for backward compatibility. */
           email: string | null;
           logo_url: string | null;
-          /** Phase 12C */
-          short_description: string | null;
-          street_address: string | null;
-          city: string | null;
-          state: string | null;
-          country: string | null;
-          postal_code: string | null;
-          google_maps_url: string | null;
-          primary_phone: string | null;
-          secondary_phone: string | null;
-          primary_email: string | null;
-          secondary_email: string | null;
-          whatsapp_number: string | null;
-          reservation_phone: string | null;
-          reservation_email: string | null;
-          website_url: string | null;
-          price_range: string | null;
-          cuisine_type: string | null;
-          established_year: string | null;
-          holiday_notice: string | null;
-          special_announcement: string | null;
-          reservation_message: string | null;
-          delivery_available: boolean;
-          takeaway_available: boolean;
-          outdoor_seating: boolean;
-          private_dining: boolean;
-          parking_available: boolean;
-          wheelchair_accessible: boolean;
-          pet_friendly: boolean;
           updated_at: string;
         };
         Insert: {
@@ -500,37 +470,34 @@ export interface Database {
           phone?: string | null;
           email?: string | null;
           logo_url?: string | null;
-          short_description?: string | null;
-          street_address?: string | null;
-          city?: string | null;
-          state?: string | null;
-          country?: string | null;
-          postal_code?: string | null;
-          google_maps_url?: string | null;
-          primary_phone?: string | null;
-          secondary_phone?: string | null;
-          primary_email?: string | null;
-          secondary_email?: string | null;
-          whatsapp_number?: string | null;
-          reservation_phone?: string | null;
-          reservation_email?: string | null;
-          website_url?: string | null;
-          price_range?: string | null;
-          cuisine_type?: string | null;
-          established_year?: string | null;
-          holiday_notice?: string | null;
-          special_announcement?: string | null;
-          reservation_message?: string | null;
-          delivery_available?: boolean;
-          takeaway_available?: boolean;
-          outdoor_seating?: boolean;
-          private_dining?: boolean;
-          parking_available?: boolean;
-          wheelchair_accessible?: boolean;
-          pet_friendly?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["restaurant_info"]["Insert"]>;
+        Relationships: [];
+      };
+
+      contact_messages: {
+        Row: {
+          id: string;
+          sender_name: string;
+          email: string;
+          phone: string | null;
+          subject: string | null;
+          body: string;
+          status: "unread" | "read" | "archived";
+          submitted_at: string;
+        };
+        Insert: {
+          id?: string;
+          sender_name: string;
+          email: string;
+          phone?: string | null;
+          subject?: string | null;
+          body: string;
+          status?: "unread" | "read" | "archived";
+          submitted_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["contact_messages"]["Insert"]>;
         Relationships: [];
       };
 
@@ -596,6 +563,83 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["social_links"]["Insert"]>;
+        Relationships: [];
+      };
+
+
+      contact_information: {
+        Row: {
+          id: string;
+          primary_phone: string;
+          secondary_phone: string | null;
+          whatsapp_number: string | null;
+          reservation_phone: string | null;
+          primary_email: string;
+          secondary_email: string | null;
+          customer_support_email: string | null;
+          street_address: string;
+          area: string | null;
+          city: string;
+          state: string | null;
+          country: string | null;
+          postal_code: string | null;
+          google_maps_url: string | null;
+          website_url: string | null;
+          business_hours_note: string | null;
+          emergency_contact: string | null;
+          customer_service_message: string | null;
+          response_time_message: string | null;
+          live_chat_enabled: boolean;
+          reservation_contact_enabled: boolean;
+          whatsapp_button_enabled: boolean;
+          call_button_enabled: boolean;
+          email_button_enabled: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          primary_phone: string;
+          secondary_phone?: string | null;
+          whatsapp_number?: string | null;
+          reservation_phone?: string | null;
+          primary_email: string;
+          secondary_email?: string | null;
+          customer_support_email?: string | null;
+          street_address: string;
+          area?: string | null;
+          city: string;
+          state?: string | null;
+          country?: string | null;
+          postal_code?: string | null;
+          google_maps_url?: string | null;
+          website_url?: string | null;
+          business_hours_note?: string | null;
+          emergency_contact?: string | null;
+          customer_service_message?: string | null;
+          response_time_message?: string | null;
+          live_chat_enabled?: boolean;
+          reservation_contact_enabled?: boolean;
+          whatsapp_button_enabled?: boolean;
+          call_button_enabled?: boolean;
+          email_button_enabled?: boolean;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["contact_information"]["Insert"]>;
+        Relationships: [];
+      };
+
+      contact_social_links: {
+        Row: {
+          id: string;
+          links: Json;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          links?: Json;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["contact_social_links"]["Insert"]>;
         Relationships: [];
       };
 

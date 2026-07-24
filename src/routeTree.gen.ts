@@ -14,6 +14,9 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminAuthenticatedRouteImport } from './routes/admin/_authenticated'
 import { Route as AdminAuthenticatedIndexRouteImport } from './routes/admin/_authenticated/index'
 import { Route as AdminAuthenticatedSettingsRouteImport } from './routes/admin/_authenticated/settings'
+import { Route as AdminAuthenticatedContentHeroRouteImport } from './routes/admin/_authenticated/content/hero'
+import { Route as AdminAuthenticatedContentAboutRouteImport } from './routes/admin/_authenticated/content/about'
+import { Route as AdminAuthenticatedContentContactSocialRouteImport } from './routes/admin/_authenticated/content/contact-social'
 import { Route as AdminAuthenticatedMessagesRouteImport } from './routes/admin/_authenticated/messages'
 import { Route as AdminAuthenticatedFaqRouteImport } from './routes/admin/_authenticated/faq'
 import { Route as AdminAuthenticatedTestimonialsIndexRouteImport } from './routes/admin/_authenticated/testimonials/index'
@@ -27,9 +30,6 @@ import { Route as AdminAuthenticatedReservationsReservationIdRouteImport } from 
 import { Route as AdminAuthenticatedOffersNewRouteImport } from './routes/admin/_authenticated/offers/new'
 import { Route as AdminAuthenticatedMenuNewRouteImport } from './routes/admin/_authenticated/menu/new'
 import { Route as AdminAuthenticatedGalleryNewRouteImport } from './routes/admin/_authenticated/gallery/new'
-import { Route as AdminAuthenticatedContentHeroRouteImport } from './routes/admin/_authenticated/content/hero'
-import { Route as AdminAuthenticatedContentAboutRouteImport } from './routes/admin/_authenticated/content/about'
-import { Route as AdminAuthenticatedContentRestaurantInformationRouteImport } from './routes/admin/_authenticated/content/restaurant-information'
 import { Route as AdminAuthenticatedChefsNewRouteImport } from './routes/admin/_authenticated/chefs/new'
 import { Route as AdminAuthenticatedTestimonialsTestimonialIdEditRouteImport } from './routes/admin/_authenticated/testimonials/$testimonialId/edit'
 import { Route as AdminAuthenticatedOffersOfferIdEditRouteImport } from './routes/admin/_authenticated/offers/$offerId/edit'
@@ -61,6 +61,24 @@ const AdminAuthenticatedSettingsRoute =
   AdminAuthenticatedSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedContentHeroRoute =
+  AdminAuthenticatedContentHeroRouteImport.update({
+    id: '/content/hero',
+    path: '/content/hero',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedContentAboutRoute =
+  AdminAuthenticatedContentAboutRouteImport.update({
+    id: '/content/about',
+    path: '/content/about',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedContentContactSocialRoute =
+  AdminAuthenticatedContentContactSocialRouteImport.update({
+    id: '/content/contact-social',
+    path: '/content/contact-social',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
 const AdminAuthenticatedMessagesRoute =
@@ -140,24 +158,6 @@ const AdminAuthenticatedGalleryNewRoute =
     path: '/gallery/new',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
-const AdminAuthenticatedContentHeroRoute =
-  AdminAuthenticatedContentHeroRouteImport.update({
-    id: '/content/hero',
-    path: '/content/hero',
-    getParentRoute: () => AdminAuthenticatedRoute,
-  } as any)
-const AdminAuthenticatedContentAboutRoute =
-  AdminAuthenticatedContentAboutRouteImport.update({
-    id: '/content/about',
-    path: '/content/about',
-    getParentRoute: () => AdminAuthenticatedRoute,
-  } as any)
-const AdminAuthenticatedContentRestaurantInformationRoute =
-  AdminAuthenticatedContentRestaurantInformationRouteImport.update({
-    id: '/content/restaurant-information',
-    path: '/content/restaurant-information',
-    getParentRoute: () => AdminAuthenticatedRoute,
-  } as any)
 const AdminAuthenticatedChefsNewRoute =
   AdminAuthenticatedChefsNewRouteImport.update({
     id: '/chefs/new',
@@ -202,11 +202,10 @@ export interface FileRoutesByFullPath {
   '/admin/faq': typeof AdminAuthenticatedFaqRoute
   '/admin/messages': typeof AdminAuthenticatedMessagesRoute
   '/admin/settings': typeof AdminAuthenticatedSettingsRoute
+  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
   '/admin/': typeof AdminAuthenticatedIndexRoute
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
-  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
-  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
-  '/admin/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -232,14 +231,14 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin': typeof AdminAuthenticatedIndexRoute
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
-  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
-  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
-  '/admin/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
   '/admin/reservations/$reservationId': typeof AdminAuthenticatedReservationsReservationIdRoute
   '/admin/testimonials/new': typeof AdminAuthenticatedTestimonialsNewRoute
+  '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
   '/admin/chefs': typeof AdminAuthenticatedChefsIndexRoute
   '/admin/gallery': typeof AdminAuthenticatedGalleryIndexRoute
   '/admin/menu': typeof AdminAuthenticatedMenuIndexRoute
@@ -260,11 +259,11 @@ export interface FileRoutesById {
   '/admin/_authenticated/faq': typeof AdminAuthenticatedFaqRoute
   '/admin/_authenticated/messages': typeof AdminAuthenticatedMessagesRoute
   '/admin/_authenticated/settings': typeof AdminAuthenticatedSettingsRoute
+  '/admin/_authenticated/content/hero': typeof AdminAuthenticatedContentHeroRoute
+  '/admin/_authenticated/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/_authenticated/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
   '/admin/_authenticated/': typeof AdminAuthenticatedIndexRoute
   '/admin/_authenticated/chefs/new': typeof AdminAuthenticatedChefsNewRoute
-  '/admin/_authenticated/content/about': typeof AdminAuthenticatedContentAboutRoute
-  '/admin/_authenticated/content/hero': typeof AdminAuthenticatedContentHeroRoute
-  '/admin/_authenticated/content/restaurant-information': typeof AdminAuthenticatedContentRestaurantInformationRoute
   '/admin/_authenticated/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
   '/admin/_authenticated/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/_authenticated/offers/new': typeof AdminAuthenticatedOffersNewRoute
@@ -291,10 +290,11 @@ export interface FileRouteTypes {
     | '/admin/faq'
     | '/admin/messages'
     | '/admin/settings'
+    | '/admin/content/hero'
+    | '/admin/content/about'
+    | '/admin/content/contact-social'
     | '/admin/'
     | '/admin/chefs/new'
-    | '/admin/content/about'
-    | '/admin/content/hero'
     | '/admin/gallery/new'
     | '/admin/menu/new'
     | '/admin/offers/new'
@@ -318,10 +318,11 @@ export interface FileRouteTypes {
     | '/admin/faq'
     | '/admin/messages'
     | '/admin/settings'
+    | '/admin/content/hero'
+    | '/admin/content/about'
+    | '/admin/content/contact-social'
     | '/admin'
     | '/admin/chefs/new'
-    | '/admin/content/about'
-    | '/admin/content/hero'
     | '/admin/gallery/new'
     | '/admin/menu/new'
     | '/admin/offers/new'
@@ -348,9 +349,6 @@ export interface FileRouteTypes {
     | '/admin/_authenticated/settings'
     | '/admin/_authenticated/'
     | '/admin/_authenticated/chefs/new'
-    | '/admin/_authenticated/content/about'
-    | '/admin/_authenticated/content/hero'
-    | '/admin/_authenticated/content/restaurant-information'
     | '/admin/_authenticated/gallery/new'
     | '/admin/_authenticated/menu/new'
     | '/admin/_authenticated/offers/new'
@@ -503,27 +501,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthenticatedGalleryNewRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
-    '/admin/_authenticated/content/hero': {
-      id: '/admin/_authenticated/content/hero'
-      path: '/content/hero'
-      fullPath: '/admin/content/hero'
-      preLoaderRoute: typeof AdminAuthenticatedContentHeroRouteImport
-      parentRoute: typeof AdminAuthenticatedRoute
-    }
-    '/admin/_authenticated/content/about': {
-      id: '/admin/_authenticated/content/about'
-      path: '/content/about'
-      fullPath: '/admin/content/about'
-      preLoaderRoute: typeof AdminAuthenticatedContentAboutRouteImport
-      parentRoute: typeof AdminAuthenticatedRoute
-    }
-    '/admin/_authenticated/content/restaurant-information': {
-      id: '/admin/_authenticated/content/restaurant-information'
-      path: '/content/restaurant-information'
-      fullPath: '/admin/content/restaurant-information'
-      preLoaderRoute: typeof AdminAuthenticatedContentRestaurantInformationRouteImport
-      parentRoute: typeof AdminAuthenticatedRoute
-    }
     '/admin/_authenticated/chefs/new': {
       id: '/admin/_authenticated/chefs/new'
       path: '/chefs/new'
@@ -573,11 +550,11 @@ interface AdminAuthenticatedRouteChildren {
   AdminAuthenticatedFaqRoute: typeof AdminAuthenticatedFaqRoute
   AdminAuthenticatedMessagesRoute: typeof AdminAuthenticatedMessagesRoute
   AdminAuthenticatedSettingsRoute: typeof AdminAuthenticatedSettingsRoute
+  AdminAuthenticatedContentHeroRoute: typeof AdminAuthenticatedContentHeroRoute
+  AdminAuthenticatedContentAboutRoute: typeof AdminAuthenticatedContentAboutRoute
+  AdminAuthenticatedContentContactSocialRoute: typeof AdminAuthenticatedContentContactSocialRoute
   AdminAuthenticatedIndexRoute: typeof AdminAuthenticatedIndexRoute
   AdminAuthenticatedChefsNewRoute: typeof AdminAuthenticatedChefsNewRoute
-  AdminAuthenticatedContentAboutRoute: typeof AdminAuthenticatedContentAboutRoute
-  AdminAuthenticatedContentHeroRoute: typeof AdminAuthenticatedContentHeroRoute
-  AdminAuthenticatedContentRestaurantInformationRoute: typeof AdminAuthenticatedContentRestaurantInformationRoute
   AdminAuthenticatedGalleryNewRoute: typeof AdminAuthenticatedGalleryNewRoute
   AdminAuthenticatedMenuNewRoute: typeof AdminAuthenticatedMenuNewRoute
   AdminAuthenticatedOffersNewRoute: typeof AdminAuthenticatedOffersNewRoute
@@ -600,11 +577,11 @@ const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
   AdminAuthenticatedFaqRoute: AdminAuthenticatedFaqRoute,
   AdminAuthenticatedMessagesRoute: AdminAuthenticatedMessagesRoute,
   AdminAuthenticatedSettingsRoute: AdminAuthenticatedSettingsRoute,
+  AdminAuthenticatedContentHeroRoute: AdminAuthenticatedContentHeroRoute,
+  AdminAuthenticatedContentAboutRoute: AdminAuthenticatedContentAboutRoute,
+  AdminAuthenticatedContentContactSocialRoute: AdminAuthenticatedContentContactSocialRoute,
   AdminAuthenticatedIndexRoute: AdminAuthenticatedIndexRoute,
   AdminAuthenticatedChefsNewRoute: AdminAuthenticatedChefsNewRoute,
-  AdminAuthenticatedContentAboutRoute: AdminAuthenticatedContentAboutRoute,
-  AdminAuthenticatedContentHeroRoute: AdminAuthenticatedContentHeroRoute,
-  AdminAuthenticatedContentRestaurantInformationRoute: AdminAuthenticatedContentRestaurantInformationRoute,
   AdminAuthenticatedGalleryNewRoute: AdminAuthenticatedGalleryNewRoute,
   AdminAuthenticatedMenuNewRoute: AdminAuthenticatedMenuNewRoute,
   AdminAuthenticatedOffersNewRoute: AdminAuthenticatedOffersNewRoute,

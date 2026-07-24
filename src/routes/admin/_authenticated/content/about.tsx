@@ -1,5 +1,5 @@
 import { createFileRoute, useBlocker } from "@tanstack/react-router";
-import { AlertTriangle, LayoutTemplate } from "lucide-react";
+import { AlertTriangle, BookOpen } from "lucide-react";
 import { useRef } from "react";
 
 import { AboutForm } from "@/components/admin/content/AboutForm";
@@ -9,7 +9,6 @@ import { PageHeader } from "@/components/admin/page/PageHeader";
 import { SectionContainer } from "@/components/admin/page/SectionContainer";
 import { Button } from "@/components/common/Button";
 import { useAbout } from "@/hooks/useAbout";
-import { DEFAULT_FEATURES } from "@/services/about.service";
 import type { AboutContent } from "@/services/about.service";
 
 export const Route = createFileRoute("/admin/_authenticated/content/about")({
@@ -23,13 +22,17 @@ export const Route = createFileRoute("/admin/_authenticated/content/about")({
  * /admin/content/about — About Section CMS (Phase 12B).
  *
  * Page layout: breadcrumbs → header → live preview card → edit form.
- * Mirrors /admin/content/hero in structure — same loading/error/not-found
- * handling, same navigation blocker via onDirtyChange, same skeleton.
+ * Data fetching via useAbout(); save orchestration inside AboutForm via
+ * useUpdateAbout(). Navigation blocker wired through onDirtyChange so
+ * we never lift the form state up unnecessarily.
+ *
+ * Mirrors the AdminHeroPage structure from Phase 12A exactly.
  */
 function AdminAboutPage() {
   const { about, isLoading, error, refetch } = useAbout();
   const isDirtyRef = useRef(false);
 
+  // Block TanStack Router navigation when the form has unsaved changes.
   useBlocker({
     blockerFn: () =>
       window.confirm(
@@ -38,28 +41,28 @@ function AdminAboutPage() {
     condition: isDirtyRef.current,
   });
 
-  // ── Loading ───────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="space-y-6">
         <Breadcrumbs page="About Section" />
         <PageHeader
           title="About Section"
-          description="Manage the homepage about content and section image."
+          description="Manage the homepage about content and image."
         />
         <AboutPageSkeleton />
       </div>
     );
   }
 
-  // ── Error (not "no row yet") ──────────────────────────────────────────
+  // ── Error state (not "no row yet") ────────────────────────────────────
   if (error && error.code !== "not_found") {
     return (
       <div className="space-y-6">
         <Breadcrumbs page="About Section" />
         <PageHeader
           title="About Section"
-          description="Manage the homepage about content and section image."
+          description="Manage the homepage about content and image."
         />
         <SectionContainer>
           <div className="flex flex-col items-center gap-3 py-8 text-center">
@@ -84,26 +87,18 @@ function AdminAboutPage() {
     );
   }
 
-  // "not_found" → no row yet. Pre-fill with the original hardcoded values
-  // so the admin sees sensible defaults rather than empty fields.
+  // Use loaded data or default values when no row exists yet (first-time setup).
   const aboutData: AboutContent = about ?? DEFAULT_ABOUT;
 
-  // ── Main page ─────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       <Breadcrumbs page="About Section" />
       <PageHeader
         title="About Section"
-        description="Manage the homepage about content and section image."
-        action={
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">
-            <LayoutTemplate className="size-3.5" aria-hidden="true" />
-            Content Management
-          </div>
-        }
+        description="Manage the homepage about content and image."
       />
 
-      {/* Live preview */}
+      {/* Live preview of currently published content */}
       <div>
         <h3 className="mb-3 text-sm font-medium text-muted-foreground">
           Currently Published
@@ -137,19 +132,7 @@ function AboutPageSkeleton() {
     <div className="space-y-6 animate-pulse">
       {/* Preview card skeleton */}
       <div className="overflow-hidden rounded-2xl border border-border">
-        <div className="flex bg-muted" style={{ minHeight: "180px" }}>
-          <div className="w-1/2 space-y-3 p-5">
-            <div className="h-3 w-20 rounded bg-muted-foreground/20" />
-            <div className="h-5 w-48 rounded bg-muted-foreground/20" />
-            <div className="h-3 w-full rounded bg-muted-foreground/20" />
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-8 rounded-lg bg-muted-foreground/20" />
-              ))}
-            </div>
-          </div>
-          <div className="w-1/2 bg-muted-foreground/10" />
-        </div>
+        <div className="bg-muted" style={{ aspectRatio: "16/5" }} />
         <div className="divide-y divide-border">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex gap-4 px-5 py-3">
@@ -162,7 +145,7 @@ function AboutPageSkeleton() {
       {/* Form skeleton */}
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="space-y-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-2">
               <div className="h-3.5 w-28 rounded bg-muted" />
               <div className="h-10 w-full rounded-lg bg-muted" />
@@ -174,20 +157,26 @@ function AboutPageSkeleton() {
   );
 }
 
-// ── Default about data ────────────────────────────────────────────────────
-// Mirrors the current hardcoded values in About.tsx and constants.ts so
-// the form is pre-populated with sensible content on first load.
+// ── Default about data ─────────────────────────────────────────────────────
+// Mirrors the current hardcoded values in About.tsx so the form is
+// pre-populated with sensible content rather than empty fields.
 
 const DEFAULT_ABOUT: AboutContent = {
   id: "",
   sectionTitle: "Our Story",
-  heading: "A haven for the curious palate.",
+  headline: "A haven for the curious palate.",
   description:
     "Born from a love of the neighborhood market, Taste Haven brings together seasonal ingredients, global technique, and a room designed for slow, unhurried evenings. Every plate is a small ceremony.",
-  features: DEFAULT_FEATURES,
-  imageUrl: null,
+  badgeLabel: "Since",
   badgeYear: "2012",
-  badgeText: "A decade of memorable evenings.",
+  badgeSubtext: "A decade of memorable evenings.",
+  imageUrl: null,
+  features: [
+    { icon: "fa-seedling", title: "Fresh Ingredients", description: "Sourced daily from local farms." },
+    { icon: "fa-hat-chef", title: "Experienced Chefs", description: "A team with global training." },
+    { icon: "fa-fire", title: "Cozy Atmosphere", description: "Warm lighting, intimate seating." },
+    { icon: "fa-bolt", title: "Fast Service", description: "Attentive, never rushed." },
+  ],
   isVisible: true,
   updatedAt: "",
 };

@@ -4,69 +4,74 @@ import { z } from "zod";
  * Client-side validation for the About Settings form (Phase 12B).
  *
  * Mirrors the extended about_settings table schema:
- * - `section_title` — nullable; optional here (defaults to "Our Story").
- * - `headline`      — NOT NULL; required here.
- * - `description`   — nullable; optional here.
- * - `features`      — jsonb array of up to 4 feature cards.
- * - `badge_year`    — nullable; optional here.
- * - `badge_text`    — nullable; optional here.
- * - `is_visible`    — boolean; defaults to true.
- * - `imageFile`     — File | null; optional (existing image kept when null).
- * - `imageCleared`  — boolean flag set by the Remove button.
+ * - `sectionTitle`   — required; small label above the heading.
+ * - `headline`       — NOT NULL on the table; required here.
+ * - `description`    — nullable; optional here.
+ * - `badgeLabel`     — nullable; optional ("Since").
+ * - `badgeYear`      — nullable; optional ("2012").
+ * - `badgeSubtext`   — nullable; optional.
+ * - `features`       — array of up to 4 feature cards.
+ * - `isVisible`      — boolean; defaults to true.
+ * - `imageFile`      — File | null; optional (existing image kept when null).
+ * - `imageCleared`   — boolean flag set by the Remove button.
  *
  * Image constraints match the restaurant-media bucket limits used by
- * hero-schema.ts, chef-schema.ts, gallery-item-schema.ts, and
- * menu-item-schema.ts throughout this project.
+ * hero-schema.ts, chef-schema.ts, and gallery-item-schema.ts.
  */
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-const aboutFeatureSchema = z.object({
+export const aboutFeatureSchema = z.object({
   icon: z
     .string()
-    .min(1, "Icon is required.")
-    .max(60, "Icon name must be 60 characters or fewer."),
+    .min(1, "Icon class is required.")
+    .max(50, "Icon class must be 50 characters or fewer."),
   title: z
     .string()
-    .min(1, "Title is required.")
-    .max(80, "Title must be 80 characters or fewer."),
+    .min(1, "Feature title is required.")
+    .max(80, "Feature title must be 80 characters or fewer."),
   description: z
     .string()
-    .max(200, "Description must be 200 characters or fewer.")
+    .max(200, "Feature description must be 200 characters or fewer.")
     .default(""),
 });
 
 export const aboutSchema = z.object({
   sectionTitle: z
     .string()
-    .max(60, "Section title must be 60 characters or fewer.")
-    .default("Our Story"),
+    .min(1, "Section title is required.")
+    .max(60, "Section title must be 60 characters or fewer."),
 
-  heading: z
+  headline: z
     .string()
-    .min(1, "Heading is required.")
-    .max(150, "Heading must be 150 characters or fewer."),
+    .min(1, "Main heading is required.")
+    .max(150, "Main heading must be 150 characters or fewer."),
 
   description: z
     .string()
     .max(600, "Description must be 600 characters or fewer.")
     .default(""),
 
-  features: z
-    .array(aboutFeatureSchema)
-    .min(1, "At least one feature card is required.")
-    .max(4, "Maximum 4 feature cards are supported."),
+  badgeLabel: z
+    .string()
+    .max(40, "Badge label must be 40 characters or fewer.")
+    .default(""),
 
   badgeYear: z
     .string()
-    .max(10, "Year must be 10 characters or fewer.")
+    .max(20, "Badge year must be 20 characters or fewer.")
     .default(""),
 
-  badgeText: z
+  badgeSubtext: z
     .string()
-    .max(80, "Badge text must be 80 characters or fewer.")
+    .max(80, "Badge subtext must be 80 characters or fewer.")
     .default(""),
+
+  features: z
+    .array(aboutFeatureSchema)
+    .min(1, "At least one feature card is required.")
+    .max(4, "A maximum of 4 feature cards is allowed."),
 
   isVisible: z.boolean().default(true),
 

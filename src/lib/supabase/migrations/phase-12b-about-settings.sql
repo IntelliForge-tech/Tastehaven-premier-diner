@@ -1,7 +1,7 @@
 -- Phase 12B — About Section CMS
--- Extends the existing about_settings table with the fields needed by the
--- About CMS admin page. Uses ADD COLUMN IF NOT EXISTS throughout so the
--- migration is safe to run even if some columns were added manually.
+-- Extends the existing about_settings table with all fields needed by the
+-- About CMS admin page. Uses ADD COLUMN IF NOT EXISTS so the migration is
+-- safe to run even if some columns were added manually.
 --
 -- Run this in the Supabase SQL editor or via the Supabase CLI:
 --   supabase db push  (if using local migrations)
@@ -9,42 +9,40 @@
 
 -- 1. Add Phase 12B columns to about_settings
 ALTER TABLE public.about_settings
-  ADD COLUMN IF NOT EXISTS section_title TEXT,
-  ADD COLUMN IF NOT EXISTS badge_year    TEXT,
-  ADD COLUMN IF NOT EXISTS badge_text    TEXT,
-  ADD COLUMN IF NOT EXISTS is_visible    BOOLEAN NOT NULL DEFAULT TRUE;
+  ADD COLUMN IF NOT EXISTS section_title  TEXT,
+  ADD COLUMN IF NOT EXISTS badge_label    TEXT,
+  ADD COLUMN IF NOT EXISTS badge_year     TEXT,
+  ADD COLUMN IF NOT EXISTS badge_subtext  TEXT,
+  ADD COLUMN IF NOT EXISTS is_visible     BOOLEAN NOT NULL DEFAULT TRUE;
 
--- 2. Ensure the features column exists and is jsonb.
---    (It already exists in the original schema, but guard with IF NOT EXISTS.)
-ALTER TABLE public.about_settings
-  ADD COLUMN IF NOT EXISTS features JSONB NOT NULL DEFAULT '[]'::jsonb;
-
--- 3. Seed the singleton row if it doesn't exist yet.
+-- 2. Seed the singleton row if it doesn't exist yet.
 --    The fixed UUID matches ABOUT_SINGLETON_ID in about.service.ts.
 INSERT INTO public.about_settings (
   id,
-  section_title,
   headline,
   description,
   image_url,
   features,
+  section_title,
+  badge_label,
   badge_year,
-  badge_text,
+  badge_subtext,
   is_visible,
   updated_at
 )
 VALUES (
   '00000000-0000-0000-0000-000000000002',
-  'Our Story',
   'A haven for the curious palate.',
   'Born from a love of the neighborhood market, Taste Haven brings together seasonal ingredients, global technique, and a room designed for slow, unhurried evenings. Every plate is a small ceremony.',
   NULL,
   '[
-    {"icon": "seedling", "title": "Fresh Ingredients",  "description": "Sourced daily from local farms."},
-    {"icon": "hat-chef",  "title": "Experienced Chefs", "description": "A team with global training."},
-    {"icon": "fire",      "title": "Cozy Atmosphere",   "description": "Warm lighting, intimate seating."},
-    {"icon": "bolt",      "title": "Fast Service",      "description": "Attentive, never rushed."}
+    {"icon": "fa-seedling", "title": "Fresh Ingredients", "description": "Sourced daily from local farms."},
+    {"icon": "fa-hat-chef", "title": "Experienced Chefs", "description": "A team with global training."},
+    {"icon": "fa-fire", "title": "Cozy Atmosphere", "description": "Warm lighting, intimate seating."},
+    {"icon": "fa-bolt", "title": "Fast Service", "description": "Attentive, never rushed."}
   ]'::jsonb,
+  'Our Story',
+  'Since',
   '2012',
   'A decade of memorable evenings.',
   TRUE,
@@ -52,28 +50,43 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 4. RLS: allow public read + authenticated admin write.
---    Mirrors the hero_settings policies from Phase 12A.
---
---    PostgreSQL does not support CREATE POLICY IF NOT EXISTS.
---    Using DROP POLICY IF EXISTS (no-op when absent) + CREATE POLICY instead.
+-- 3. RLS: allow authenticated admins to read and update about_settings.
+--    Matches the pattern used by hero_settings and other CMS tables.
 
 -- Public read (public site loads about content without auth)
-DROP POLICY IF EXISTS "about_settings_public_read" ON public.about_settings;
-CREATE POLICY "about_settings_public_read"
-  ON public.about_settings
-  FOR SELECT
-  TO anon, authenticated
-  USING (TRUE);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'about_settings'
+      AND policyname = 'about_settings_public_read'
+  ) THEN
+    CREATE POLICY "about_settings_public_read"
+      ON public.about_settings
+      FOR SELECT
+      TO anon, authenticated
+      USING (TRUE);
+  END IF;
+END $$;
 
 -- Admin write (only authenticated admins can update)
-DROP POLICY IF EXISTS "about_settings_admin_write" ON public.about_settings;
-CREATE POLICY "about_settings_admin_write"
-  ON public.about_settings
-  FOR ALL
-  TO authenticated
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'about_settings'
+      AND policyname = 'about_settings_admin_write'
+  ) THEN
+    CREATE POLICY "about_settings_admin_write"
+      ON public.about_settings
+      FOR ALL
+      TO authenticated
+      USING (public.is_admin())
+      WITH CHECK (public.is_admin());
+  END IF;
+END $$;
 
--- Enable RLS (safe to run even if already enabled)
+-- Enable RLS on the table (safe to run even if already enabled)
 ALTER TABLE public.about_settings ENABLE ROW LEVEL SECURITY;

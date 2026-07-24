@@ -6,16 +6,17 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 /**
  * About service — Phase 12B.
  *
- * Manages the about_settings singleton row. Follows the exact same
- * pattern as hero.service.ts: UI components never touch Supabase
- * directly — they call this service and receive UI-safe result types.
+ * Manages the about_settings singleton row (there is exactly one row,
+ * identified by a fixed id). UI components never import the Supabase
+ * client or database.types.ts directly — they call this service and
+ * get back small, UI-safe result types, following the same pattern as
+ * hero.service.ts and the rest of the project.
  *
- * The existing about_settings table has:
- *   id, headline, description, image_url, features (jsonb), updated_at
+ * about_settings in database.types.ts has:
+ *   id, headline, description, image_url, features, updated_at
  *
- * Phase 12B extends it with additional columns via a safe migration
- * (ADD COLUMN IF NOT EXISTS). The singleton id is fixed so there is
- * always exactly one row, upserted on every save.
+ * Phase 12B extends this table with additional columns via a migration.
+ * The features column stores feature cards as JSON.
  */
 
 export type AboutServiceErrorCode =
@@ -30,34 +31,35 @@ export interface AboutServiceError {
   message: string;
 }
 
-/** One feature card in the About section's 2×2 grid. */
+/** A single feature card in the About section grid. */
 export interface AboutFeature {
-  /** FontAwesome icon class without the "fa-solid fa-" prefix — e.g. "seedling". */
+  /** Font Awesome icon class suffix, e.g. "fa-seedling". */
   icon: string;
+  /** Card title, e.g. "Fresh Ingredients". */
   title: string;
+  /** Card description, e.g. "Sourced daily from local farms." */
   description: string;
 }
 
-/**
- * The full set of manageable About section fields.
- * Matches the extended about_settings table (see migration SQL).
- */
+/** The full set of manageable About fields. */
 export interface AboutContent {
   id: string;
-  /** Small kicker label above the heading — e.g. "Our Story". */
+  /** Section label above the heading — e.g. "Our Story" */
   sectionTitle: string;
   /** Main heading — e.g. "A haven for the curious palate." */
-  heading: string;
-  /** Description paragraph beneath the heading. */
+  headline: string;
+  /** Primary description paragraph. */
   description: string | null;
-  /** Four feature cards shown in the 2×2 grid below the description. */
-  features: AboutFeature[];
-  /** Public URL of the main About image (right column). */
-  imageUrl: string | null;
-  /** Year shown in the decorative badge overlay — e.g. "2012". */
+  /** Decorative badge label — e.g. "Since" */
+  badgeLabel: string | null;
+  /** Year or short text displayed large inside the badge — e.g. "2012" */
   badgeYear: string | null;
-  /** Sub-text in the decorative badge overlay — e.g. "A decade of memorable evenings." */
-  badgeText: string | null;
+  /** Smaller text below the badge year — e.g. "A decade of memorable evenings." */
+  badgeSubtext: string | null;
+  /** Public URL of the main about image. */
+  imageUrl: string | null;
+  /** Feature cards array (up to 4). */
+  features: AboutFeature[];
   /** When false the entire About section is hidden on the public site. */
   isVisible: boolean;
   updatedAt: string;
@@ -69,8 +71,8 @@ export type GetAboutResult =
 
 /**
  * Fetches the single about_settings row.
- * Returns a structured "not_found" error when no row exists yet so the
- * caller can show defaults rather than crashing — same pattern as getHero().
+ * If no row exists yet, returns a structured "not_found" error so the
+ * caller can display defaults rather than crashing.
  */
 export async function getAbout(): Promise<GetAboutResult> {
   try {
@@ -79,8 +81,8 @@ export async function getAbout(): Promise<GetAboutResult> {
     const { data, error } = await supabase
       .from("about_settings")
       .select(
-        "id, section_title, headline, description, image_url, features, " +
-        "badge_year, badge_text, is_visible, updated_at",
+        "id, headline, description, image_url, features, " +
+        "section_title, badge_label, badge_year, badge_subtext, is_visible, updated_at",
       )
       .limit(1)
       .maybeSingle();
@@ -96,7 +98,10 @@ export async function getAbout(): Promise<GetAboutResult> {
       };
     }
 
-    return { success: true, data: mapRow(data) };
+    return {
+      success: true,
+      data: mapRow(data),
+    };
   } catch (err) {
     return { success: false, error: mapUnexpectedError(err, "load") };
   }
@@ -104,12 +109,13 @@ export async function getAbout(): Promise<GetAboutResult> {
 
 export interface UpdateAboutInput {
   sectionTitle: string;
-  heading: string;
+  headline: string;
   description: string | null;
-  features: AboutFeature[];
-  imageUrl: string | null;
+  badgeLabel: string | null;
   badgeYear: string | null;
-  badgeText: string | null;
+  badgeSubtext: string | null;
+  imageUrl: string | null;
+  features: AboutFeature[];
   isVisible: boolean;
 }
 
@@ -118,8 +124,8 @@ export type UpdateAboutResult =
   | { success: false; error: AboutServiceError };
 
 /**
- * Upserts the about_settings singleton row.
- * Uses a fixed well-known id — same singleton pattern as updateHero().
+ * Upserts the about_settings row.
+ * Uses a fixed well-known id so there is always exactly one row.
  */
 export async function updateAbout(input: UpdateAboutInput): Promise<UpdateAboutResult> {
   try {
@@ -128,13 +134,14 @@ export async function updateAbout(input: UpdateAboutInput): Promise<UpdateAboutR
     const { error } = await supabase.from("about_settings").upsert(
       {
         id: ABOUT_SINGLETON_ID,
-        section_title: input.sectionTitle,
-        headline: input.heading,
+        headline: input.headline,
         description: input.description,
         image_url: input.imageUrl,
-        features: input.features as unknown as object[],
+        features: input.features as unknown as Record<string, unknown>[],
+        section_title: input.sectionTitle,
+        badge_label: input.badgeLabel,
         badge_year: input.badgeYear,
-        badge_text: input.badgeText,
+        badge_subtext: input.badgeSubtext,
         is_visible: input.isVisible,
         updated_at: new Date().toISOString(),
       },
@@ -161,9 +168,8 @@ const ABOUT_BUCKET = "restaurant-media";
 const ABOUT_IMAGE_FOLDER = "about";
 
 /**
- * Uploads an About section image to the restaurant-media bucket under
- * the about/ folder — mirrors uploadHeroImage() and uploadChefImage()
- * from their respective services exactly.
+ * Uploads an about image to the restaurant-media bucket under its
+ * about/ folder, exactly mirroring uploadHeroImage().
  */
 export async function uploadAboutImage(file: File): Promise<UploadAboutImageResult> {
   try {
@@ -201,14 +207,14 @@ export type DeleteAboutImageResult =
   | { success: false; error: AboutServiceError };
 
 /**
- * Deletes an About image from Storage by its public URL.
- * Mirrors deleteHeroImage() / deleteGalleryImage().
+ * Deletes an about image from Storage by its public URL.
+ * Mirrors deleteHeroImage().
  */
 export async function deleteAboutImage(publicUrl: string): Promise<DeleteAboutImageResult> {
   try {
     const supabase = getSupabaseBrowserClient();
     const path = extractStoragePath(publicUrl, ABOUT_BUCKET);
-    if (!path) return { success: true };
+    if (!path) return { success: true }; // nothing to delete
 
     const { error } = await supabase.storage.from(ABOUT_BUCKET).remove([path]);
 
@@ -233,45 +239,41 @@ const ABOUT_SINGLETON_ID = "00000000-0000-0000-0000-000000000002";
 
 type AboutRow = {
   id: string;
-  section_title: string | null;
   headline: string;
   description: string | null;
   image_url: string | null;
   features: unknown;
+  section_title: string | null;
+  badge_label: string | null;
   badge_year: string | null;
-  badge_text: string | null;
+  badge_subtext: string | null;
   is_visible: boolean | null;
   updated_at: string;
 };
 
 function mapRow(row: AboutRow): AboutContent {
+  let features: AboutFeature[] = DEFAULT_FEATURES;
+  if (Array.isArray(row.features) && row.features.length > 0) {
+    features = (row.features as Record<string, unknown>[]).map((f) => ({
+      icon: String(f.icon ?? "fa-star"),
+      title: String(f.title ?? ""),
+      description: String(f.description ?? ""),
+    }));
+  }
+
   return {
     id: row.id,
     sectionTitle: row.section_title ?? "Our Story",
-    heading: row.headline,
+    headline: row.headline,
     description: row.description,
-    features: parseFeatures(row.features),
-    imageUrl: row.image_url,
+    badgeLabel: row.badge_label,
     badgeYear: row.badge_year,
-    badgeText: row.badge_text,
+    badgeSubtext: row.badge_subtext,
+    imageUrl: row.image_url,
+    features,
     isVisible: row.is_visible ?? true,
     updatedAt: row.updated_at,
   };
-}
-
-/** Safely parses the features JSON column into AboutFeature[]. */
-function parseFeatures(raw: unknown): AboutFeature[] {
-  if (!Array.isArray(raw)) return DEFAULT_FEATURES;
-  return raw
-    .filter(
-      (item): item is Record<string, unknown> =>
-        typeof item === "object" && item !== null,
-    )
-    .map((item) => ({
-      icon: typeof item["icon"] === "string" ? item["icon"] : "star",
-      title: typeof item["title"] === "string" ? item["title"] : "",
-      description: typeof item["description"] === "string" ? item["description"] : "",
-    }));
 }
 
 function extractStoragePath(publicUrl: string, bucket: string): string | null {
@@ -293,6 +295,7 @@ function mapPostgrestError(
   context: "load" | "save" | "delete" = "load",
 ): AboutServiceError {
   console.error(`[about.service] ${context} failed:`, error.message);
+
   return {
     code: "unexpected_error",
     message:
@@ -314,6 +317,7 @@ function mapUnexpectedError(
       message: "We couldn't reach the server. Check your internet connection and try again.",
     };
   }
+
   return {
     code: "unexpected_error",
     message:
@@ -327,10 +331,10 @@ function mapUnexpectedError(
   };
 }
 
-/** Default features matching the current hardcoded ABOUT_FEATURES constant. */
-export const DEFAULT_FEATURES: AboutFeature[] = [
-  { icon: "seedling", title: "Fresh Ingredients", description: "Sourced daily from local farms." },
-  { icon: "hat-chef", title: "Experienced Chefs", description: "A team with global training." },
-  { icon: "fire", title: "Cozy Atmosphere", description: "Warm lighting, intimate seating." },
-  { icon: "bolt", title: "Fast Service", description: "Attentive, never rushed." },
+/** Fallback feature cards — mirror ABOUT_FEATURES from constants.ts. */
+const DEFAULT_FEATURES: AboutFeature[] = [
+  { icon: "fa-seedling", title: "Fresh Ingredients", description: "Sourced daily from local farms." },
+  { icon: "fa-hat-chef", title: "Experienced Chefs", description: "A team with global training." },
+  { icon: "fa-fire", title: "Cozy Atmosphere", description: "Warm lighting, intimate seating." },
+  { icon: "fa-bolt", title: "Fast Service", description: "Attentive, never rushed." },
 ];

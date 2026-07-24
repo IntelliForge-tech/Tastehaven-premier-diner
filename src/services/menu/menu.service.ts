@@ -494,3 +494,108 @@ function extractMenuImageStoragePath(publicUrl: string): string | null {
 
   return publicUrl.slice(markerIndex + marker.length);
 }
+
+// ============================================================================
+// Public-facing menu queries — separate from admin queries intentionally.
+//
+// getMenuItems() (above) is used by the admin dashboard: it returns ALL
+// non-deleted items, including unavailable ones, because an admin needs to
+// see everything. The public site needs only is_available = true items, and
+// only categories that are is_active = true. Adding separate functions here
+// avoids modifying the already-working admin query and keeps both paths
+// explicit and independently testable.
+// ============================================================================
+
+/** A minimal item shape for the public menu page — only fields the UI actually uses. */
+export interface PublicMenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  rating: number | null;
+  imageUrl: string | null;
+  /** The category name string (e.g. "Pizza"), not its id. */
+  categoryName: string | null;
+}
+
+export type GetPublicMenuItemsResult =
+  | { success: true; data: PublicMenuItem[] }
+  | { success: false; error: MenuServiceError };
+
+/**
+ * Fetches only available, non-deleted menu items for the public site.
+ * Filters `is_available = true` AND `deleted_at IS NULL` — the admin's
+ * `getMenuItems()` omits the `is_available` filter intentionally (admins
+ * see unavailable items so they can manage them).
+ */
+export async function getPublicMenuItems(): Promise<GetPublicMenuItemsResult> {
+  try {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select(
+        "id, name, description, price, rating, image_url, is_available, menu_categories(name)",
+      )
+      .is("deleted_at", null)
+      .eq("is_available", true)
+      .order("display_order", { ascending: true })
+      .order("name", { ascending: true });
+
+    if (error) {
+      return { success: false, error: mapPostgrestError(error, "load") };
+    }
+
+    const items: PublicMenuItem[] = data.map((row) => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      price: row.price,
+      rating: row.rating,
+      imageUrl: row.image_url,
+      categoryName:
+        row.menu_categories && !Array.isArray(row.menu_categories)
+          ? (row.menu_categories as { name: string }).name
+          : Array.isArray(row.menu_categories) && row.menu_categories.length > 0
+            ? (row.menu_categories[0] as { name: string }).name
+            : null,
+    }));
+
+    return { success: true, data: items };
+  } catch (err) {
+    return { success: false, error: mapUnexpectedError(err) };
+  }
+}
+
+export type GetPublicMenuCategoriesResult =
+  | { success: true; data: MenuCategory[] }
+  | { success: false; error: MenuServiceError };
+
+/**
+ * Fetches only active menu categories for the public site's filter chips.
+ * The admin's `getMenuCategories()` returns ALL categories (including
+ * inactive ones) so admins can assign items to any category. This version
+ * filters `is_active = true` to match what visitors should see.
+ */
+export async function getPublicMenuCategories(): Promise<GetPublicMenuCategoriesResult> {
+  try {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("menu_categories")
+      .select("id, name")
+      .order("display_order", { ascending: true })
+      .order("name", { ascending: true });
+
+    if (error) {
+      return { success: false, error: mapPostgrestError(error, "load") };
+    }
+
+    return {
+      success: true,
+      data: data.map((row) => ({ id: row.id, name: row.name })),
+    };
+  } catch (err) {
+    return { success: false, error: mapUnexpectedError(err) };
+  }
+}

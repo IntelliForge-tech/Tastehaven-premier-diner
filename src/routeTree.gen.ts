@@ -16,7 +16,7 @@ import { Route as AdminAuthenticatedIndexRouteImport } from './routes/admin/_aut
 import { Route as AdminAuthenticatedSettingsRouteImport } from './routes/admin/_authenticated/settings'
 import { Route as AdminAuthenticatedContentHeroRouteImport } from './routes/admin/_authenticated/content/hero'
 import { Route as AdminAuthenticatedContentAboutRouteImport } from './routes/admin/_authenticated/content/about'
-import { Route as AdminAuthenticatedContentContactSocialRouteImport } from './routes/admin/_authenticated/content/contact-social'
+import { Route as AdminAuthenticatedContentSiteSettingsRouteImport } from './routes/admin/_authenticated/content/site-settings'
 import { Route as AdminAuthenticatedMessagesRouteImport } from './routes/admin/_authenticated/messages'
 import { Route as AdminAuthenticatedFaqRouteImport } from './routes/admin/_authenticated/faq'
 import { Route as AdminAuthenticatedTestimonialsIndexRouteImport } from './routes/admin/_authenticated/testimonials/index'
@@ -75,10 +75,10 @@ const AdminAuthenticatedContentAboutRoute =
     path: '/content/about',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
-const AdminAuthenticatedContentContactSocialRoute =
-  AdminAuthenticatedContentContactSocialRouteImport.update({
-    id: '/content/contact-social',
-    path: '/content/contact-social',
+const AdminAuthenticatedContentSiteSettingsRoute =
+  AdminAuthenticatedContentSiteSettingsRouteImport.update({
+    id: '/content/site-settings',
+    path: '/content/site-settings',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
 const AdminAuthenticatedMessagesRoute =
@@ -203,7 +203,8 @@ export interface FileRoutesByFullPath {
   '/admin/messages': typeof AdminAuthenticatedMessagesRoute
   '/admin/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
-  '/admin/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
+  '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
+  '/admin/content/site-settings': typeof AdminAuthenticatedContentSiteSettingsRoute
   '/admin/': typeof AdminAuthenticatedIndexRoute
   '/admin/chefs/new': typeof AdminAuthenticatedChefsNewRoute
   '/admin/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
@@ -238,7 +239,7 @@ export interface FileRoutesByTo {
   '/admin/testimonials/new': typeof AdminAuthenticatedTestimonialsNewRoute
   '/admin/content/hero': typeof AdminAuthenticatedContentHeroRoute
   '/admin/content/about': typeof AdminAuthenticatedContentAboutRoute
-  '/admin/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
+  '/admin/content/site-settings': typeof AdminAuthenticatedContentSiteSettingsRoute
   '/admin/chefs': typeof AdminAuthenticatedChefsIndexRoute
   '/admin/gallery': typeof AdminAuthenticatedGalleryIndexRoute
   '/admin/menu': typeof AdminAuthenticatedMenuIndexRoute
@@ -261,7 +262,7 @@ export interface FileRoutesById {
   '/admin/_authenticated/settings': typeof AdminAuthenticatedSettingsRoute
   '/admin/_authenticated/content/hero': typeof AdminAuthenticatedContentHeroRoute
   '/admin/_authenticated/content/about': typeof AdminAuthenticatedContentAboutRoute
-  '/admin/_authenticated/content/contact-social': typeof AdminAuthenticatedContentContactSocialRoute
+  '/admin/_authenticated/content/site-settings': typeof AdminAuthenticatedContentSiteSettingsRoute
   '/admin/_authenticated/': typeof AdminAuthenticatedIndexRoute
   '/admin/_authenticated/chefs/new': typeof AdminAuthenticatedChefsNewRoute
   '/admin/_authenticated/gallery/new': typeof AdminAuthenticatedGalleryNewRoute
@@ -292,7 +293,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/content/hero'
     | '/admin/content/about'
-    | '/admin/content/contact-social'
+    | '/admin/content/site-settings'
     | '/admin/'
     | '/admin/chefs/new'
     | '/admin/gallery/new'
@@ -320,7 +321,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/content/hero'
     | '/admin/content/about'
-    | '/admin/content/contact-social'
+    | '/admin/content/site-settings'
     | '/admin'
     | '/admin/chefs/new'
     | '/admin/gallery/new'
@@ -347,6 +348,9 @@ export interface FileRouteTypes {
     | '/admin/_authenticated/faq'
     | '/admin/_authenticated/messages'
     | '/admin/_authenticated/settings'
+    | '/admin/_authenticated/content/hero'
+    | '/admin/_authenticated/content/about'
+    | '/admin/_authenticated/content/site-settings'
     | '/admin/_authenticated/'
     | '/admin/_authenticated/chefs/new'
     | '/admin/_authenticated/gallery/new'
@@ -552,7 +556,7 @@ interface AdminAuthenticatedRouteChildren {
   AdminAuthenticatedSettingsRoute: typeof AdminAuthenticatedSettingsRoute
   AdminAuthenticatedContentHeroRoute: typeof AdminAuthenticatedContentHeroRoute
   AdminAuthenticatedContentAboutRoute: typeof AdminAuthenticatedContentAboutRoute
-  AdminAuthenticatedContentContactSocialRoute: typeof AdminAuthenticatedContentContactSocialRoute
+  AdminAuthenticatedContentSiteSettingsRoute: typeof AdminAuthenticatedContentSiteSettingsRoute
   AdminAuthenticatedIndexRoute: typeof AdminAuthenticatedIndexRoute
   AdminAuthenticatedChefsNewRoute: typeof AdminAuthenticatedChefsNewRoute
   AdminAuthenticatedGalleryNewRoute: typeof AdminAuthenticatedGalleryNewRoute
@@ -579,7 +583,7 @@ const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
   AdminAuthenticatedSettingsRoute: AdminAuthenticatedSettingsRoute,
   AdminAuthenticatedContentHeroRoute: AdminAuthenticatedContentHeroRoute,
   AdminAuthenticatedContentAboutRoute: AdminAuthenticatedContentAboutRoute,
-  AdminAuthenticatedContentContactSocialRoute: AdminAuthenticatedContentContactSocialRoute,
+  AdminAuthenticatedContentSiteSettingsRoute: AdminAuthenticatedContentSiteSettingsRoute,
   AdminAuthenticatedIndexRoute: AdminAuthenticatedIndexRoute,
   AdminAuthenticatedChefsNewRoute: AdminAuthenticatedChefsNewRoute,
   AdminAuthenticatedGalleryNewRoute: AdminAuthenticatedGalleryNewRoute,

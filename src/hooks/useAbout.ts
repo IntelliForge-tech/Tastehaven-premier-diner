@@ -18,8 +18,8 @@ export interface UseAboutResult {
  * Mirrors useHero() exactly: loading/error/data state + refetch trigger,
  * with cancellation on unmount via a `cancelled` flag.
  *
- * Returns `about: null` both while loading and when the row doesn't
- * exist yet — callers differentiate with `isLoading` and `error.code`.
+ * Returns `about: null` both while loading and when no row exists yet —
+ * callers differentiate with `isLoading` and `error.code`.
  */
 export function useAbout(): UseAboutResult {
   const [about, setAbout] = useState<AboutContent | null>(null);
@@ -39,8 +39,6 @@ export function useAbout(): UseAboutResult {
       if (result.success) {
         setAbout(result.data);
       } else {
-        // "not_found" is not a hard error on the public site — callers
-        // show defaults. Admin page shows an error state instead.
         setError(result.error);
         setAbout(null);
       }

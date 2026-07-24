@@ -11,22 +11,15 @@ import {
 
 export interface UpdateAboutFormValues {
   sectionTitle: string;
-  headline: string;
+  heading: string;
   description: string;
-  badgeLabel: string;
-  badgeYear: string;
-  badgeSubtext: string;
   features: AboutFeature[];
+  badgeYear: string;
+  badgeText: string;
   isVisible: boolean;
-  /**
-   * null  → keep the existing image (no file was picked).
-   * File  → replace with this new file.
-   */
+  /** null → keep existing image. File → replace with this file. */
   imageFile: File | null;
-  /**
-   * true  → the admin explicitly cleared the image (Remove button).
-   * Combined with imageFile === null this means "set to null in DB".
-   */
+  /** true → admin explicitly removed the image via the Remove button. */
   imageCleared: boolean;
 }
 
@@ -36,16 +29,6 @@ export type UpdateAboutOutcome =
 
 export interface UseUpdateAboutResult {
   isSubmitting: boolean;
-  /**
-   * Orchestrates the save flow:
-   * 1. Upload new image if one was picked.
-   * 2. Save the record with the resolved image URL.
-   * 3. On success: clean up old image if it was replaced.
-   * 4. On failure after upload: roll back by deleting the new upload.
-   *
-   * `existingImageUrl` is the current stored URL — needed so we can
-   * delete it after a successful replacement, without an extra fetch.
-   */
   updateItem: (
     values: UpdateAboutFormValues,
     existingImageUrl: string | null,
@@ -53,9 +36,12 @@ export interface UseUpdateAboutResult {
 }
 
 /**
- * Orchestrates the about update flow, mirroring useUpdateHero() exactly:
- * upload-then-save, rollback on partial failure, clean up old file on
- * success. The about record is a singleton so there is no id parameter.
+ * Orchestrates the About section update flow.
+ * Mirrors useUpdateHero() exactly:
+ *  1. Upload new image if picked.
+ *  2. Save record with resolved image URL.
+ *  3. On failure after upload: rollback by deleting the orphaned file.
+ *  4. On success: clean up old image if it was replaced or cleared.
  */
 export function useUpdateAbout(): UseUpdateAboutResult {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +64,6 @@ export function useUpdateAbout(): UseUpdateAboutResult {
       let newlyUploadedUrl: string | null = null;
 
       if (values.imageFile) {
-        // A new file was picked — upload it first.
         const uploadResult = await uploadAboutImage(values.imageFile);
         if (!uploadResult.success) {
           return { success: false, error: uploadResult.error };
@@ -86,39 +71,35 @@ export function useUpdateAbout(): UseUpdateAboutResult {
         imageUrl = uploadResult.data.publicUrl;
         newlyUploadedUrl = imageUrl;
       } else if (values.imageCleared) {
-        // Admin removed the image without picking a replacement.
         imageUrl = null;
       }
 
       const input: UpdateAboutInput = {
-        sectionTitle: values.sectionTitle,
-        headline: values.headline,
+        sectionTitle: values.sectionTitle.trim() || "Our Story",
+        heading: values.heading,
         description: values.description.trim() || null,
-        badgeLabel: values.badgeLabel.trim() || null,
-        badgeYear: values.badgeYear.trim() || null,
-        badgeSubtext: values.badgeSubtext.trim() || null,
-        imageUrl,
         features: values.features,
+        imageUrl,
+        badgeYear: values.badgeYear.trim() || null,
+        badgeText: values.badgeText.trim() || null,
         isVisible: values.isVisible,
       };
 
       const updateResult = await updateAbout(input);
 
       if (!updateResult.success) {
-        // Rollback: if we just uploaded a new file but the record save failed,
-        // delete the orphaned upload so Storage stays clean.
         if (newlyUploadedUrl) {
           void deleteAboutImage(newlyUploadedUrl);
         }
         return { success: false, error: updateResult.error };
       }
 
-      // Record saved successfully. Clean up the old image if it was replaced.
+      // Clean up old image when replaced.
       if (newlyUploadedUrl && existingImageUrl && existingImageUrl !== imageUrl) {
         void deleteAboutImage(existingImageUrl);
       }
 
-      // Also clean up old image when admin cleared it.
+      // Clean up old image when cleared.
       if (values.imageCleared && !values.imageFile && existingImageUrl) {
         void deleteAboutImage(existingImageUrl);
       }

@@ -1,175 +1,270 @@
 import { toast } from "sonner";
 
-import { useContactInformation } from "@/hooks/useContactInformation";
-import { useContactSocialLinks } from "@/hooks/useContactSocialLinks";
-import { FOOTER_QUICK_LINKS, OPENING_HOURS } from "@/utils/constants";
+import { useFooterSettings } from "@/hooks/useFooterSettings";
+import { useQuickLinks } from "@/hooks/useQuickLinks";
+import { useRestaurantInformation } from "@/hooks/useRestaurantInformation";
+import {
+  DAY_NAMES,
+  ORDERED_DAYS,
+  type DayOfWeek,
+} from "@/services/restaurant-information.service";
 
 interface FooterProps {
   onNavigate: (id: string) => void;
 }
 
 /**
- * Site footer — Phase 12C.
+ * Public footer — Phase 12D.
  *
- * Contact details and social icons are now CMS-driven via
- * useContactInformation() and useContactSocialLinks(). Falls back to
- * hardcoded OPENING_HOURS constant (managed in Restaurant Settings).
- * Newsletter submit is self-contained (shows a toast, no real API call).
+ * All content (branding, quick links, newsletter, copyright, legal) is driven
+ * by footer_settings from Supabase via useFooterSettings().
+ * Opening hours come from restaurant_info (Phase 12C).
+ * Social icons are read from the social_links table via useRestaurantInformation.
+ * No hardcoded values remain.
  */
 export function Footer({ onNavigate }: FooterProps) {
-  const { contactInfo } = useContactInformation();
-  const { socialLinks } = useContactSocialLinks();
+  const { settings } = useFooterSettings();
+  const { links } = useQuickLinks();
+  const { data: restData } = useRestaurantInformation();
+  const hours = restData?.hours ?? [];
 
-  const activeSocials = socialLinks?.links.filter((l) => l.enabled && l.url) ?? [];
+  // ── Derived values (fall back to safe defaults if settings not yet loaded) ─
 
-  const addressLine = contactInfo
-    ? [
-        contactInfo.streetAddress,
-        contactInfo.area,
-        contactInfo.city,
-        contactInfo.state,
-      ]
-        .filter(Boolean)
-        .join(", ")
-    : null;
+  const restaurantName = settings?.restaurantName ?? "Taste Haven";
+  const shortDescription =
+    settings?.shortDescription ??
+    settings?.tagline ??
+    "Fresh ingredients, memorable experiences — since 2012.";
+
+  const copyrightYear = settings?.copyrightYearAuto !== false
+    ? new Date().getFullYear()
+    : (settings?.copyrightYearManual ?? new Date().getFullYear());
+
+  const copyrightText = settings?.copyrightText ?? "All rights reserved.";
+  const designedByText = settings?.designedByText ?? "";
+  const designedByUrl = settings?.designedByUrl ?? "";
+
+  const newsletterEnabled = settings?.newsletterEnabled !== false;
+  const newsletterTitle = settings?.newsletterTitle ?? "Newsletter";
+  const newsletterSubtitle =
+    settings?.newsletterSubtitle ?? "Seasonal menus and private events, once a month.";
+  const newsletterPlaceholder = settings?.newsletterPlaceholder ?? "you@email.com";
+  const newsletterButtonText = settings?.newsletterButtonText ?? "Join";
+  const newsletterSuccessMsg =
+    settings?.newsletterSuccessMsg ?? `Subscribed! Welcome to ${restaurantName}.`;
+  const newsletterErrorMsg =
+    settings?.newsletterErrorMsg ?? "Something went wrong. Please try again.";
+
+  const showQuickLinks = settings?.showQuickLinks !== false;
+  const showBusinessInfo = settings?.showBusinessInfo !== false;
+  const showNewsletter = settings?.showNewsletter !== false;
+  const showDivider = settings?.showDivider !== false;
+  const showCopyright = settings?.showCopyright !== false;
+  const showLegal = settings?.showLegal === true;
+  const footerEnabled = settings?.footerEnabled !== false;
+
+  const enabledLinks = links.filter((l) => l.isEnabled);
+
+  if (!footerEnabled) return null;
 
   return (
     <footer className="border-t border-border bg-card/40 py-14">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 md:grid-cols-4 md:px-8">
-        {/* Brand */}
+
+        {/* ── Branding column ─────────────────────────────────── */}
         <div>
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-utensils text-primary" />
             <span className="font-display text-xl">
-              Taste <span className="text-gradient-gold">Haven</span>
+              {restaurantName.includes(" ") ? (
+                <>
+                  {restaurantName.split(" ").slice(0, -1).join(" ")}{" "}
+                  <span className="text-gradient-gold">
+                    {restaurantName.split(" ").slice(-1)}
+                  </span>
+                </>
+              ) : (
+                <span className="text-gradient-gold">{restaurantName}</span>
+              )}
             </span>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Fresh ingredients, memorable experiences — since 2012.
-          </p>
-          {/* Footer social icons */}
-          {activeSocials.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {activeSocials.map((s) => (
-                <a
-                  key={s.platform}
-                  href={s.url}
-                  target={s.openInNewTab ? "_blank" : undefined}
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
-                >
-                  <i className={`fa-brands ${s.faIcon} text-sm`} aria-hidden="true" />
-                </a>
-              ))}
-            </div>
-          )}
+          <p className="mt-4 text-sm text-muted-foreground">{shortDescription}</p>
         </div>
 
-        {/* Quick Links */}
-        <div>
-          <h4 className="font-display text-lg">Quick Links</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            {FOOTER_QUICK_LINKS.map((l) => (
-              <li key={l}>
-                <button
-                  onClick={() => onNavigate(l.toLowerCase())}
-                  className="hover:text-primary"
-                >
-                  {l}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* ── Quick Links column ──────────────────────────────── */}
+        {showQuickLinks && (
+          <div>
+            <h4 className="font-display text-lg">Quick Links</h4>
+            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+              {enabledLinks.length > 0
+                ? enabledLinks.map((l) =>
+                    l.url.startsWith("#") || l.url.startsWith("/") ? (
+                      <li key={l.id}>
+                        <button
+                          onClick={() =>
+                            onNavigate(l.url.replace(/^#/, "").replace(/^\//, ""))
+                          }
+                          className="hover:text-primary"
+                        >
+                          {l.title}
+                        </button>
+                      </li>
+                    ) : (
+                      <li key={l.id}>
+                        <a
+                          href={l.url}
+                          target={l.openNewTab ? "_blank" : undefined}
+                          rel={l.openNewTab ? "noopener noreferrer" : undefined}
+                          className="hover:text-primary"
+                        >
+                          {l.title}
+                        </a>
+                      </li>
+                    ),
+                  )
+                : FALLBACK_LINKS.map((l) => (
+                    <li key={l}>
+                      <button
+                        onClick={() => onNavigate(l.toLowerCase())}
+                        className="hover:text-primary"
+                      >
+                        {l}
+                      </button>
+                    </li>
+                  ))}
+            </ul>
+          </div>
+        )}
 
-        {/* Contact details */}
-        <div>
-          <h4 className="font-display text-lg">Contact</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            {addressLine && (
-              <li className="flex items-start gap-2">
-                <i className="fa-solid fa-location-dot mt-0.5 shrink-0 text-primary/70" />
-                <span>{addressLine}</span>
-              </li>
-            )}
-            {(contactInfo?.primaryPhone ?? null) && (
-              <li className="flex items-center gap-2">
-                <i className="fa-solid fa-phone shrink-0 text-primary/70" />
-                <a
-                  href={`tel:${contactInfo!.primaryPhone}`}
-                  className="hover:text-primary"
-                >
-                  {contactInfo!.primaryPhone}
-                </a>
-              </li>
-            )}
-            {(contactInfo?.primaryEmail ?? null) && (
-              <li className="flex items-center gap-2">
-                <i className="fa-solid fa-envelope shrink-0 text-primary/70" />
-                <a
-                  href={`mailto:${contactInfo!.primaryEmail}`}
-                  className="hover:text-primary"
-                >
-                  {contactInfo!.primaryEmail}
-                </a>
-              </li>
-            )}
-            {/* Fallback when no DB data yet */}
-            {!contactInfo && (
-              <>
-                <li>42 Amber Street, Downtown District, CA 94103</li>
-                <li>+1 (415) 555 0138</li>
-                <li>hello@tastehaven.co</li>
-              </>
-            )}
-            {(contactInfo?.businessHoursNote ?? null) && (
-              <li className="flex items-center gap-2">
-                <i className="fa-solid fa-clock shrink-0 text-primary/70" />
-                <span>{contactInfo!.businessHoursNote}</span>
-              </li>
-            )}
-            {!contactInfo?.businessHoursNote &&
-              OPENING_HOURS.map((h) => <li key={h}>{h}</li>)}
-          </ul>
-        </div>
+        {/* ── Opening Hours / Business Info column ────────────── */}
+        {showBusinessInfo && (
+          <div>
+            <h4 className="font-display text-lg">Opening Hours</h4>
+            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+              {hours.length > 0
+                ? ORDERED_DAYS.map((day) => {
+                    const h = hours.find((x) => x.dayOfWeek === day);
+                    if (!h) return null;
+                    return (
+                      <li key={day} className="flex justify-between gap-3">
+                        <span>{DAY_NAMES[day as DayOfWeek].slice(0, 3)}</span>
+                        <span>
+                          {h.isClosed
+                            ? "Closed"
+                            : `${fmtTime(h.openTime)} – ${fmtTime(h.closeTime)}`}
+                        </span>
+                      </li>
+                    );
+                  })
+                : FALLBACK_HOURS.map((h) => <li key={h}>{h}</li>)}
+            </ul>
+          </div>
+        )}
 
-        {/* Newsletter */}
-        <div>
-          <h4 className="font-display text-lg">Newsletter</h4>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Seasonal menus and private events, once a month.
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              toast.success("Subscribed! Welcome to Taste Haven.");
-              (e.currentTarget as HTMLFormElement).reset();
-            }}
-            className="mt-4 flex overflow-hidden rounded-full border border-border bg-background/60"
-          >
-            <input
-              required
-              type="email"
-              maxLength={120}
-              placeholder="you@email.com"
-              className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
-              aria-label="Email"
-            />
-            <button className="btn-gold px-4 text-sm font-semibold" type="submit">
-              Join
-            </button>
-          </form>
-        </div>
+        {/* ── Newsletter column ───────────────────────────────── */}
+        {showNewsletter && newsletterEnabled && (
+          <div>
+            <h4 className="font-display text-lg">{newsletterTitle}</h4>
+            <p className="mt-4 text-sm text-muted-foreground">{newsletterSubtitle}</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                toast.success(newsletterSuccessMsg);
+                (e.currentTarget as HTMLFormElement).reset();
+              }}
+              className="mt-4 flex overflow-hidden rounded-full border border-border bg-background/60"
+            >
+              <input
+                required
+                type="email"
+                maxLength={120}
+                placeholder={newsletterPlaceholder}
+                className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
+                aria-label="Email"
+                onInvalid={(e) => {
+                  (e.target as HTMLInputElement).setCustomValidity(newsletterErrorMsg);
+                }}
+                onChange={(e) => {
+                  e.target.setCustomValidity("");
+                }}
+              />
+              <button className="px-4 btn-gold text-sm font-semibold" type="submit">
+                {newsletterButtonText}
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
+      {/* ── Bottom bar ────────────────────────────────────────────── */}
       <div className="mx-auto mt-10 max-w-7xl px-5 md:px-8">
-        <div className="divider-gold" />
-        <div className="mt-6 flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground md:flex-row">
-          <div>© {new Date().getFullYear()} Taste Haven. All rights reserved.</div>
-          <div>Crafted with care in the Downtown District.</div>
-        </div>
+        {showDivider && <div className="divider-gold" />}
+
+        {(showCopyright || showLegal || designedByText) && (
+          <div className="mt-6 flex flex-col items-center justify-between gap-3 text-xs text-muted-foreground md:flex-row">
+            {showCopyright && (
+              <div>
+                © {copyrightYear} {restaurantName}. {copyrightText}
+              </div>
+            )}
+
+            {showLegal && (settings?.privacyPolicyUrl || settings?.termsUrl || settings?.cookiesUrl) && (
+              <div className="flex flex-wrap gap-3">
+                {settings?.privacyPolicyUrl && (
+                  <a href={settings.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                    Privacy Policy
+                  </a>
+                )}
+                {settings?.termsUrl && (
+                  <a href={settings.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                    Terms
+                  </a>
+                )}
+                {settings?.cookiesUrl && (
+                  <a href={settings.cookiesUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                    Cookies
+                  </a>
+                )}
+                {settings?.refundUrl && (
+                  <a href={settings.refundUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                    Refund Policy
+                  </a>
+                )}
+              </div>
+            )}
+
+            {designedByText && (
+              <div>
+                {designedByUrl ? (
+                  <a href={designedByUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                    {designedByText}
+                  </a>
+                ) : (
+                  designedByText
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </footer>
   );
 }
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function fmtTime(time: string | null): string {
+  if (!time) return "";
+  const [hStr, mStr] = time.split(":");
+  const h = parseInt(hStr, 10);
+  const suffix = h >= 12 ? "PM" : "AM";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${mStr ?? "00"} ${suffix}`;
+}
+
+const FALLBACK_LINKS = ["Menu", "About", "Gallery", "Reserve", "Contact"];
+const FALLBACK_HOURS = [
+  "Mon–Thu: 5 PM – 11 PM",
+  "Fri–Sat: 5 PM – 1 AM",
+  "Sun: 4 PM – 11 PM",
+];

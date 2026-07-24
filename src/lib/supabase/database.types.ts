@@ -417,31 +417,29 @@ export interface Database {
         Row: {
           id: string;
           headline: string;
+          /** Phase 12B: small uppercase kicker above the heading — e.g. "Our Story". */
+          section_title: string | null;
           description: string | null;
           image_url: string | null;
+          /** jsonb array of { icon, title, description } objects. */
           features: Json;
-          /** Phase 12B: small label above the heading, e.g. "Our Story". */
-          section_title: string | null;
-          /** Phase 12B: badge label, e.g. "Since". */
-          badge_label: string | null;
-          /** Phase 12B: badge year / value displayed large in gold, e.g. "2012". */
+          /** Phase 12B: year shown in the decorative badge overlay — e.g. "2012". */
           badge_year: string | null;
-          /** Phase 12B: small text below badge year. */
-          badge_subtext: string | null;
-          /** Phase 12B: when false the entire About section is hidden. */
+          /** Phase 12B: subtitle shown in the decorative badge overlay. */
+          badge_text: string | null;
+          /** Phase 12B: when false the entire About section is hidden on the public site. */
           is_visible: boolean;
           updated_at: string;
         };
         Insert: {
           id?: string;
           headline: string;
+          section_title?: string | null;
           description?: string | null;
           image_url?: string | null;
           features?: Json;
-          section_title?: string | null;
-          badge_label?: string | null;
           badge_year?: string | null;
-          badge_subtext?: string | null;
+          badge_text?: string | null;
           is_visible?: boolean;
           updated_at?: string;
         };
@@ -473,31 +471,6 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["restaurant_info"]["Insert"]>;
-        Relationships: [];
-      };
-
-      contact_messages: {
-        Row: {
-          id: string;
-          sender_name: string;
-          email: string;
-          phone: string | null;
-          subject: string | null;
-          body: string;
-          status: "unread" | "read" | "archived";
-          submitted_at: string;
-        };
-        Insert: {
-          id?: string;
-          sender_name: string;
-          email: string;
-          phone?: string | null;
-          subject?: string | null;
-          body: string;
-          status?: "unread" | "read" | "archived";
-          submitted_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["contact_messages"]["Insert"]>;
         Relationships: [];
       };
 
@@ -566,83 +539,6 @@ export interface Database {
         Relationships: [];
       };
 
-
-      contact_information: {
-        Row: {
-          id: string;
-          primary_phone: string;
-          secondary_phone: string | null;
-          whatsapp_number: string | null;
-          reservation_phone: string | null;
-          primary_email: string;
-          secondary_email: string | null;
-          customer_support_email: string | null;
-          street_address: string;
-          area: string | null;
-          city: string;
-          state: string | null;
-          country: string | null;
-          postal_code: string | null;
-          google_maps_url: string | null;
-          website_url: string | null;
-          business_hours_note: string | null;
-          emergency_contact: string | null;
-          customer_service_message: string | null;
-          response_time_message: string | null;
-          live_chat_enabled: boolean;
-          reservation_contact_enabled: boolean;
-          whatsapp_button_enabled: boolean;
-          call_button_enabled: boolean;
-          email_button_enabled: boolean;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          primary_phone: string;
-          secondary_phone?: string | null;
-          whatsapp_number?: string | null;
-          reservation_phone?: string | null;
-          primary_email: string;
-          secondary_email?: string | null;
-          customer_support_email?: string | null;
-          street_address: string;
-          area?: string | null;
-          city: string;
-          state?: string | null;
-          country?: string | null;
-          postal_code?: string | null;
-          google_maps_url?: string | null;
-          website_url?: string | null;
-          business_hours_note?: string | null;
-          emergency_contact?: string | null;
-          customer_service_message?: string | null;
-          response_time_message?: string | null;
-          live_chat_enabled?: boolean;
-          reservation_contact_enabled?: boolean;
-          whatsapp_button_enabled?: boolean;
-          call_button_enabled?: boolean;
-          email_button_enabled?: boolean;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["contact_information"]["Insert"]>;
-        Relationships: [];
-      };
-
-      contact_social_links: {
-        Row: {
-          id: string;
-          links: Json;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          links?: Json;
-          updated_at?: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["contact_social_links"]["Insert"]>;
-        Relationships: [];
-      };
-
       seo_settings: {
         Row: {
           id: string;
@@ -667,6 +563,106 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["seo_settings"]["Insert"]>;
+        Relationships: [];
+      };
+
+      site_settings: {
+        Row: {
+          id: string;
+          // General
+          website_name: string;
+          website_tagline: string | null;
+          website_description: string | null;
+          website_url: string | null;
+          default_language: string;
+          timezone: string;
+          business_currency: string;
+          theme_color: string | null;
+          primary_brand_color: string | null;
+          secondary_brand_color: string | null;
+          accent_color: string | null;
+          // SEO
+          meta_title: string;
+          meta_description: string;
+          meta_keywords: string | null;
+          canonical_url: string | null;
+          author: string | null;
+          publisher: string | null;
+          robots_meta: string;
+          google_verification: string | null;
+          bing_verification: string | null;
+          yandex_verification: string | null;
+          facebook_app_id: string | null;
+          twitter_username: string | null;
+          og_title: string | null;
+          og_description: string | null;
+          og_image_url: string | null;
+          twitter_card_type: string;
+          og_site_name: string | null;
+          og_type: string;
+          og_locale: string;
+          // Branding
+          favicon_url: string | null;
+          apple_touch_icon_url: string | null;
+          browser_theme_color: string | null;
+          background_color: string | null;
+          // Analytics
+          google_analytics_id: string | null;
+          google_analytics_enabled: boolean;
+          google_tag_manager_id: string | null;
+          google_tag_manager_enabled: boolean;
+          meta_pixel_id: string | null;
+          meta_pixel_enabled: boolean;
+          microsoft_clarity_id: string | null;
+          microsoft_clarity_enabled: boolean;
+          hotjar_id: string | null;
+          hotjar_enabled: boolean;
+          custom_header_script: string | null;
+          custom_body_script: string | null;
+          custom_footer_script: string | null;
+          // Search engine
+          allow_indexing: boolean;
+          generate_robots_txt: boolean;
+          generate_sitemap: boolean;
+          enable_structured_data: boolean;
+          enable_local_business_schema: boolean;
+          enable_faq_schema: boolean;
+          enable_organization_schema: boolean;
+          // PWA
+          enable_pwa: boolean;
+          pwa_app_name: string | null;
+          pwa_short_name: string | null;
+          pwa_theme_color: string | null;
+          pwa_background_color: string | null;
+          pwa_start_url: string;
+          pwa_display_mode: string;
+          pwa_offline_support: boolean;
+          // Feature toggles
+          enable_animations: boolean;
+          enable_scroll_to_top: boolean;
+          enable_cookie_banner: boolean;
+          enable_newsletter: boolean;
+          enable_reservation_system: boolean;
+          enable_contact_form: boolean;
+          enable_gallery: boolean;
+          enable_testimonials: boolean;
+          enable_chef_section: boolean;
+          enable_offers: boolean;
+          // Maintenance
+          maintenance_mode: boolean;
+          maintenance_title: string | null;
+          maintenance_message: string | null;
+          maintenance_image_url: string | null;
+          maintenance_expected_return: string | null;
+          allow_search_engines_during_maintenance: boolean;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["site_settings"]["Row"]> & {
+          website_name: string;
+          meta_title: string;
+          meta_description: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["site_settings"]["Insert"]>;
         Relationships: [];
       };
     };

@@ -64,7 +64,7 @@ function AdminTablesPage() {
   const [mergeOpen, setMergeOpen] = useState(false);
 
   // Effective floor filter: tab selector OR dropdown filter
-  const effectiveFloorId = selectedFloorId ?? filters.floorId || null;
+  const effectiveFloorId = (selectedFloorId ?? filters.floorId) || null;
 
   const filtered = useMemo(() => {
     let result = tables;

@@ -17,12 +17,19 @@ import { Route as AdminAuthenticatedSettingsRouteImport } from './routes/admin/_
 import { Route as AdminAuthenticatedMessagesRouteImport } from './routes/admin/_authenticated/messages'
 import { Route as AdminAuthenticatedFaqRouteImport } from './routes/admin/_authenticated/faq'
 import { Route as AdminAuthenticatedTestimonialsIndexRouteImport } from './routes/admin/_authenticated/testimonials/index'
+import { Route as AdminAuthenticatedTablesIndexRouteImport } from './routes/admin/_authenticated/tables/index'
 import { Route as AdminAuthenticatedReservationsIndexRouteImport } from './routes/admin/_authenticated/reservations/index'
 import { Route as AdminAuthenticatedOffersIndexRouteImport } from './routes/admin/_authenticated/offers/index'
 import { Route as AdminAuthenticatedMenuIndexRouteImport } from './routes/admin/_authenticated/menu/index'
 import { Route as AdminAuthenticatedGalleryIndexRouteImport } from './routes/admin/_authenticated/gallery/index'
+import { Route as AdminAuthenticatedFloorsIndexRouteImport } from './routes/admin/_authenticated/floors/index'
 import { Route as AdminAuthenticatedChefsIndexRouteImport } from './routes/admin/_authenticated/chefs/index'
 import { Route as AdminAuthenticatedTestimonialsNewRouteImport } from './routes/admin/_authenticated/testimonials/new'
+import { Route as AdminAuthenticatedTablesLiveRouteImport } from './routes/admin/_authenticated/tables/live'
+import { Route as AdminAuthenticatedTablesAnalyticsRouteImport } from './routes/admin/_authenticated/tables/analytics'
+import { Route as AdminAuthenticatedReservationsTimelineRouteImport } from './routes/admin/_authenticated/reservations/timeline'
+import { Route as AdminAuthenticatedReservationsCalendarRouteImport } from './routes/admin/_authenticated/reservations/calendar'
+import { Route as AdminAuthenticatedReservationsAnalyticsRouteImport } from './routes/admin/_authenticated/reservations/analytics'
 import { Route as AdminAuthenticatedReservationsReservationIdRouteImport } from './routes/admin/_authenticated/reservations/$reservationId'
 import { Route as AdminAuthenticatedOffersNewRouteImport } from './routes/admin/_authenticated/offers/new'
 import { Route as AdminAuthenticatedMenuNewRouteImport } from './routes/admin/_authenticated/menu/new'
@@ -83,6 +90,12 @@ const AdminAuthenticatedTestimonialsIndexRoute =
     path: '/testimonials/',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
+const AdminAuthenticatedTablesIndexRoute =
+  AdminAuthenticatedTablesIndexRouteImport.update({
+    id: '/tables/',
+    path: '/tables/',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
 const AdminAuthenticatedReservationsIndexRoute =
   AdminAuthenticatedReservationsIndexRouteImport.update({
     id: '/reservations/',
@@ -107,6 +120,12 @@ const AdminAuthenticatedGalleryIndexRoute =
     path: '/gallery/',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
+const AdminAuthenticatedFloorsIndexRoute =
+  AdminAuthenticatedFloorsIndexRouteImport.update({
+    id: '/floors/',
+    path: '/floors/',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
 const AdminAuthenticatedChefsIndexRoute =
   AdminAuthenticatedChefsIndexRouteImport.update({
     id: '/chefs/',
@@ -117,6 +136,36 @@ const AdminAuthenticatedTestimonialsNewRoute =
   AdminAuthenticatedTestimonialsNewRouteImport.update({
     id: '/testimonials/new',
     path: '/testimonials/new',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedTablesLiveRoute =
+  AdminAuthenticatedTablesLiveRouteImport.update({
+    id: '/tables/live',
+    path: '/tables/live',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedTablesAnalyticsRoute =
+  AdminAuthenticatedTablesAnalyticsRouteImport.update({
+    id: '/tables/analytics',
+    path: '/tables/analytics',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedReservationsTimelineRoute =
+  AdminAuthenticatedReservationsTimelineRouteImport.update({
+    id: '/reservations/timeline',
+    path: '/reservations/timeline',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedReservationsCalendarRoute =
+  AdminAuthenticatedReservationsCalendarRouteImport.update({
+    id: '/reservations/calendar',
+    path: '/reservations/calendar',
+    getParentRoute: () => AdminAuthenticatedRoute,
+  } as any)
+const AdminAuthenticatedReservationsAnalyticsRoute =
+  AdminAuthenticatedReservationsAnalyticsRouteImport.update({
+    id: '/reservations/analytics',
+    path: '/reservations/analytics',
     getParentRoute: () => AdminAuthenticatedRoute,
   } as any)
 const AdminAuthenticatedReservationsReservationIdRoute =
@@ -235,12 +284,19 @@ export interface FileRoutesByFullPath {
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
   '/admin/reservations/$reservationId': typeof AdminAuthenticatedReservationsReservationIdRoute
+  '/admin/reservations/analytics': typeof AdminAuthenticatedReservationsAnalyticsRoute
+  '/admin/reservations/calendar': typeof AdminAuthenticatedReservationsCalendarRoute
+  '/admin/reservations/timeline': typeof AdminAuthenticatedReservationsTimelineRoute
+  '/admin/tables/analytics': typeof AdminAuthenticatedTablesAnalyticsRoute
+  '/admin/tables/live': typeof AdminAuthenticatedTablesLiveRoute
   '/admin/testimonials/new': typeof AdminAuthenticatedTestimonialsNewRoute
   '/admin/chefs/': typeof AdminAuthenticatedChefsIndexRoute
+  '/admin/floors/': typeof AdminAuthenticatedFloorsIndexRoute
   '/admin/gallery/': typeof AdminAuthenticatedGalleryIndexRoute
   '/admin/menu/': typeof AdminAuthenticatedMenuIndexRoute
   '/admin/offers/': typeof AdminAuthenticatedOffersIndexRoute
   '/admin/reservations/': typeof AdminAuthenticatedReservationsIndexRoute
+  '/admin/tables/': typeof AdminAuthenticatedTablesIndexRoute
   '/admin/testimonials/': typeof AdminAuthenticatedTestimonialsIndexRoute
   '/admin/chefs/$chefId/edit': typeof AdminAuthenticatedChefsChefIdEditRoute
   '/admin/gallery/$imageId/edit': typeof AdminAuthenticatedGalleryImageIdEditRoute
@@ -266,12 +322,19 @@ export interface FileRoutesByTo {
   '/admin/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/offers/new': typeof AdminAuthenticatedOffersNewRoute
   '/admin/reservations/$reservationId': typeof AdminAuthenticatedReservationsReservationIdRoute
+  '/admin/reservations/analytics': typeof AdminAuthenticatedReservationsAnalyticsRoute
+  '/admin/reservations/calendar': typeof AdminAuthenticatedReservationsCalendarRoute
+  '/admin/reservations/timeline': typeof AdminAuthenticatedReservationsTimelineRoute
+  '/admin/tables/analytics': typeof AdminAuthenticatedTablesAnalyticsRoute
+  '/admin/tables/live': typeof AdminAuthenticatedTablesLiveRoute
   '/admin/testimonials/new': typeof AdminAuthenticatedTestimonialsNewRoute
   '/admin/chefs': typeof AdminAuthenticatedChefsIndexRoute
+  '/admin/floors': typeof AdminAuthenticatedFloorsIndexRoute
   '/admin/gallery': typeof AdminAuthenticatedGalleryIndexRoute
   '/admin/menu': typeof AdminAuthenticatedMenuIndexRoute
   '/admin/offers': typeof AdminAuthenticatedOffersIndexRoute
   '/admin/reservations': typeof AdminAuthenticatedReservationsIndexRoute
+  '/admin/tables': typeof AdminAuthenticatedTablesIndexRoute
   '/admin/testimonials': typeof AdminAuthenticatedTestimonialsIndexRoute
   '/admin/chefs/$chefId/edit': typeof AdminAuthenticatedChefsChefIdEditRoute
   '/admin/gallery/$imageId/edit': typeof AdminAuthenticatedGalleryImageIdEditRoute
@@ -299,12 +362,19 @@ export interface FileRoutesById {
   '/admin/_authenticated/menu/new': typeof AdminAuthenticatedMenuNewRoute
   '/admin/_authenticated/offers/new': typeof AdminAuthenticatedOffersNewRoute
   '/admin/_authenticated/reservations/$reservationId': typeof AdminAuthenticatedReservationsReservationIdRoute
+  '/admin/_authenticated/reservations/analytics': typeof AdminAuthenticatedReservationsAnalyticsRoute
+  '/admin/_authenticated/reservations/calendar': typeof AdminAuthenticatedReservationsCalendarRoute
+  '/admin/_authenticated/reservations/timeline': typeof AdminAuthenticatedReservationsTimelineRoute
+  '/admin/_authenticated/tables/analytics': typeof AdminAuthenticatedTablesAnalyticsRoute
+  '/admin/_authenticated/tables/live': typeof AdminAuthenticatedTablesLiveRoute
   '/admin/_authenticated/testimonials/new': typeof AdminAuthenticatedTestimonialsNewRoute
   '/admin/_authenticated/chefs/': typeof AdminAuthenticatedChefsIndexRoute
+  '/admin/_authenticated/floors/': typeof AdminAuthenticatedFloorsIndexRoute
   '/admin/_authenticated/gallery/': typeof AdminAuthenticatedGalleryIndexRoute
   '/admin/_authenticated/menu/': typeof AdminAuthenticatedMenuIndexRoute
   '/admin/_authenticated/offers/': typeof AdminAuthenticatedOffersIndexRoute
   '/admin/_authenticated/reservations/': typeof AdminAuthenticatedReservationsIndexRoute
+  '/admin/_authenticated/tables/': typeof AdminAuthenticatedTablesIndexRoute
   '/admin/_authenticated/testimonials/': typeof AdminAuthenticatedTestimonialsIndexRoute
   '/admin/_authenticated/chefs/$chefId/edit': typeof AdminAuthenticatedChefsChefIdEditRoute
   '/admin/_authenticated/gallery/$imageId/edit': typeof AdminAuthenticatedGalleryImageIdEditRoute
@@ -333,12 +403,19 @@ export interface FileRouteTypes {
     | '/admin/menu/new'
     | '/admin/offers/new'
     | '/admin/reservations/$reservationId'
+    | '/admin/reservations/analytics'
+    | '/admin/reservations/calendar'
+    | '/admin/reservations/timeline'
+    | '/admin/tables/analytics'
+    | '/admin/tables/live'
     | '/admin/testimonials/new'
     | '/admin/chefs/'
+    | '/admin/floors/'
     | '/admin/gallery/'
     | '/admin/menu/'
     | '/admin/offers/'
     | '/admin/reservations/'
+    | '/admin/tables/'
     | '/admin/testimonials/'
     | '/admin/chefs/$chefId/edit'
     | '/admin/gallery/$imageId/edit'
@@ -364,12 +441,19 @@ export interface FileRouteTypes {
     | '/admin/menu/new'
     | '/admin/offers/new'
     | '/admin/reservations/$reservationId'
+    | '/admin/reservations/analytics'
+    | '/admin/reservations/calendar'
+    | '/admin/reservations/timeline'
+    | '/admin/tables/analytics'
+    | '/admin/tables/live'
     | '/admin/testimonials/new'
     | '/admin/chefs'
+    | '/admin/floors'
     | '/admin/gallery'
     | '/admin/menu'
     | '/admin/offers'
     | '/admin/reservations'
+    | '/admin/tables'
     | '/admin/testimonials'
     | '/admin/chefs/$chefId/edit'
     | '/admin/gallery/$imageId/edit'
@@ -396,12 +480,19 @@ export interface FileRouteTypes {
     | '/admin/_authenticated/menu/new'
     | '/admin/_authenticated/offers/new'
     | '/admin/_authenticated/reservations/$reservationId'
+    | '/admin/_authenticated/reservations/analytics'
+    | '/admin/_authenticated/reservations/calendar'
+    | '/admin/_authenticated/reservations/timeline'
+    | '/admin/_authenticated/tables/analytics'
+    | '/admin/_authenticated/tables/live'
     | '/admin/_authenticated/testimonials/new'
     | '/admin/_authenticated/chefs/'
+    | '/admin/_authenticated/floors/'
     | '/admin/_authenticated/gallery/'
     | '/admin/_authenticated/menu/'
     | '/admin/_authenticated/offers/'
     | '/admin/_authenticated/reservations/'
+    | '/admin/_authenticated/tables/'
     | '/admin/_authenticated/testimonials/'
     | '/admin/_authenticated/chefs/$chefId/edit'
     | '/admin/_authenticated/gallery/$imageId/edit'
@@ -474,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthenticatedTestimonialsIndexRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
+    '/admin/_authenticated/tables/': {
+      id: '/admin/_authenticated/tables/'
+      path: '/tables'
+      fullPath: '/admin/tables/'
+      preLoaderRoute: typeof AdminAuthenticatedTablesIndexRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
     '/admin/_authenticated/reservations/': {
       id: '/admin/_authenticated/reservations/'
       path: '/reservations'
@@ -502,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthenticatedGalleryIndexRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
+    '/admin/_authenticated/floors/': {
+      id: '/admin/_authenticated/floors/'
+      path: '/floors'
+      fullPath: '/admin/floors/'
+      preLoaderRoute: typeof AdminAuthenticatedFloorsIndexRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
     '/admin/_authenticated/chefs/': {
       id: '/admin/_authenticated/chefs/'
       path: '/chefs'
@@ -514,6 +619,41 @@ declare module '@tanstack/react-router' {
       path: '/testimonials/new'
       fullPath: '/admin/testimonials/new'
       preLoaderRoute: typeof AdminAuthenticatedTestimonialsNewRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/tables/live': {
+      id: '/admin/_authenticated/tables/live'
+      path: '/tables/live'
+      fullPath: '/admin/tables/live'
+      preLoaderRoute: typeof AdminAuthenticatedTablesLiveRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/tables/analytics': {
+      id: '/admin/_authenticated/tables/analytics'
+      path: '/tables/analytics'
+      fullPath: '/admin/tables/analytics'
+      preLoaderRoute: typeof AdminAuthenticatedTablesAnalyticsRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/reservations/timeline': {
+      id: '/admin/_authenticated/reservations/timeline'
+      path: '/reservations/timeline'
+      fullPath: '/admin/reservations/timeline'
+      preLoaderRoute: typeof AdminAuthenticatedReservationsTimelineRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/reservations/calendar': {
+      id: '/admin/_authenticated/reservations/calendar'
+      path: '/reservations/calendar'
+      fullPath: '/admin/reservations/calendar'
+      preLoaderRoute: typeof AdminAuthenticatedReservationsCalendarRouteImport
+      parentRoute: typeof AdminAuthenticatedRoute
+    }
+    '/admin/_authenticated/reservations/analytics': {
+      id: '/admin/_authenticated/reservations/analytics'
+      path: '/reservations/analytics'
+      fullPath: '/admin/reservations/analytics'
+      preLoaderRoute: typeof AdminAuthenticatedReservationsAnalyticsRouteImport
       parentRoute: typeof AdminAuthenticatedRoute
     }
     '/admin/_authenticated/reservations/$reservationId': {
@@ -647,12 +787,19 @@ interface AdminAuthenticatedRouteChildren {
   AdminAuthenticatedMenuNewRoute: typeof AdminAuthenticatedMenuNewRoute
   AdminAuthenticatedOffersNewRoute: typeof AdminAuthenticatedOffersNewRoute
   AdminAuthenticatedReservationsReservationIdRoute: typeof AdminAuthenticatedReservationsReservationIdRoute
+  AdminAuthenticatedReservationsAnalyticsRoute: typeof AdminAuthenticatedReservationsAnalyticsRoute
+  AdminAuthenticatedReservationsCalendarRoute: typeof AdminAuthenticatedReservationsCalendarRoute
+  AdminAuthenticatedReservationsTimelineRoute: typeof AdminAuthenticatedReservationsTimelineRoute
+  AdminAuthenticatedTablesAnalyticsRoute: typeof AdminAuthenticatedTablesAnalyticsRoute
+  AdminAuthenticatedTablesLiveRoute: typeof AdminAuthenticatedTablesLiveRoute
   AdminAuthenticatedTestimonialsNewRoute: typeof AdminAuthenticatedTestimonialsNewRoute
   AdminAuthenticatedChefsIndexRoute: typeof AdminAuthenticatedChefsIndexRoute
+  AdminAuthenticatedFloorsIndexRoute: typeof AdminAuthenticatedFloorsIndexRoute
   AdminAuthenticatedGalleryIndexRoute: typeof AdminAuthenticatedGalleryIndexRoute
   AdminAuthenticatedMenuIndexRoute: typeof AdminAuthenticatedMenuIndexRoute
   AdminAuthenticatedOffersIndexRoute: typeof AdminAuthenticatedOffersIndexRoute
   AdminAuthenticatedReservationsIndexRoute: typeof AdminAuthenticatedReservationsIndexRoute
+  AdminAuthenticatedTablesIndexRoute: typeof AdminAuthenticatedTablesIndexRoute
   AdminAuthenticatedTestimonialsIndexRoute: typeof AdminAuthenticatedTestimonialsIndexRoute
   AdminAuthenticatedChefsChefIdEditRoute: typeof AdminAuthenticatedChefsChefIdEditRoute
   AdminAuthenticatedGalleryImageIdEditRoute: typeof AdminAuthenticatedGalleryImageIdEditRoute
@@ -681,14 +828,25 @@ const AdminAuthenticatedRouteChildren: AdminAuthenticatedRouteChildren = {
   AdminAuthenticatedOffersNewRoute: AdminAuthenticatedOffersNewRoute,
   AdminAuthenticatedReservationsReservationIdRoute:
     AdminAuthenticatedReservationsReservationIdRoute,
+  AdminAuthenticatedReservationsAnalyticsRoute:
+    AdminAuthenticatedReservationsAnalyticsRoute,
+  AdminAuthenticatedReservationsCalendarRoute:
+    AdminAuthenticatedReservationsCalendarRoute,
+  AdminAuthenticatedReservationsTimelineRoute:
+    AdminAuthenticatedReservationsTimelineRoute,
+  AdminAuthenticatedTablesAnalyticsRoute:
+    AdminAuthenticatedTablesAnalyticsRoute,
+  AdminAuthenticatedTablesLiveRoute: AdminAuthenticatedTablesLiveRoute,
   AdminAuthenticatedTestimonialsNewRoute:
     AdminAuthenticatedTestimonialsNewRoute,
   AdminAuthenticatedChefsIndexRoute: AdminAuthenticatedChefsIndexRoute,
+  AdminAuthenticatedFloorsIndexRoute: AdminAuthenticatedFloorsIndexRoute,
   AdminAuthenticatedGalleryIndexRoute: AdminAuthenticatedGalleryIndexRoute,
   AdminAuthenticatedMenuIndexRoute: AdminAuthenticatedMenuIndexRoute,
   AdminAuthenticatedOffersIndexRoute: AdminAuthenticatedOffersIndexRoute,
   AdminAuthenticatedReservationsIndexRoute:
     AdminAuthenticatedReservationsIndexRoute,
+  AdminAuthenticatedTablesIndexRoute: AdminAuthenticatedTablesIndexRoute,
   AdminAuthenticatedTestimonialsIndexRoute:
     AdminAuthenticatedTestimonialsIndexRoute,
   AdminAuthenticatedChefsChefIdEditRoute:

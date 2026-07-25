@@ -6,10 +6,11 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   Mail,
+  PanelBottom,
   Percent,
   Quote,
   Settings,
-  Settings2,
+  Store,
   UtensilsCrossed,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -21,6 +22,13 @@ export interface AdminNavItem {
   exact?: boolean;
 }
 
+/**
+ * Full admin sidebar navigation. `exact: true` on Dashboard only —
+ * `/admin` is a path-prefix of every other admin route, so without it
+ * the Dashboard row would stay highlighted on every admin page.
+ *
+ * Phase 12A adds the Hero Section entry under Content Management.
+ */
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard, exact: true },
   { label: "Menu", to: "/admin/menu", icon: UtensilsCrossed },
@@ -33,6 +41,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: "Contact Messages", to: "/admin/messages", icon: Mail },
   { label: "Hero Section", to: "/admin/content/hero", icon: LayoutTemplate },
   { label: "About Section", to: "/admin/content/about", icon: LayoutTemplate },
-  { label: "Site Settings", to: "/admin/content/site-settings", icon: Settings2 },
+  { label: "Restaurant Information", to: "/admin/content/restaurant-information", icon: Store },
+  { label: "Footer", to: "/admin/content/footer", icon: PanelBottom },
   { label: "Restaurant Settings", to: "/admin/settings", icon: Settings },
 ];

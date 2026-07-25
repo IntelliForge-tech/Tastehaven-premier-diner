@@ -51,7 +51,7 @@ export function ReservationDetailsDrawer({
   async function handleStatusChange(newStatus: ReservationStatusValue) {
     if (!window.confirm(`Change status to "${STATUS_LABELS[newStatus]}"?`)) return;
     setIsChanging(true);
-    const result = await updateReservationStatus(reservation.id, newStatus);
+    const result = await updateReservationStatus( reservation.id, newStatus, reservation.status, adminUserId,);
     setIsChanging(false);
     if (!result.success) {
       toast.error(result.error.message);

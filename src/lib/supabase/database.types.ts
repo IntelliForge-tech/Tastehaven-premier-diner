@@ -26,6 +26,8 @@ export type AdminRole = "owner" | "staff";
 export type ReservationStatus =
   | "pending"
   | "confirmed"
+  | "checked_in"
+  | "seated"
   | "completed"
   | "cancelled"
   | "no_show";
@@ -303,6 +305,16 @@ export interface Database {
           status: ReservationStatus;
           admin_notes: string | null;
           confirmed_at: string | null;
+          /** Phase 13A */
+          table_number: string | null;
+          checked_in_at: string | null;
+          seated_at: string | null;
+          completed_at: string | null;
+          cancelled_at: string | null;
+          no_show_at: string | null;
+          staff_notes: string | null;
+          tags: string[] | null;
+          source: string;
           created_at: string;
           updated_at: string;
         };
@@ -318,11 +330,48 @@ export interface Database {
           status?: ReservationStatus;
           admin_notes?: string | null;
           confirmed_at?: string | null;
+          table_number?: string | null;
+          checked_in_at?: string | null;
+          seated_at?: string | null;
+          completed_at?: string | null;
+          cancelled_at?: string | null;
+          no_show_at?: string | null;
+          staff_notes?: string | null;
+          tags?: string[] | null;
+          source?: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["reservations"]["Insert"]>;
         Relationships: [];
+      };
+
+      reservation_notes: {
+        Row: {
+          id: string;
+          reservation_id: string;
+          note: string;
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          reservation_id: string;
+          note: string;
+          created_by: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["reservation_notes"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "reservation_notes_reservation_id_fkey";
+            columns: ["reservation_id"];
+            referencedRelation: "reservations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
 
       reservation_status_log: {
@@ -453,10 +502,42 @@ export interface Database {
           name: string;
           tagline: string | null;
           description: string | null;
+          /** Legacy column — kept for backward compatibility. */
           address: string | null;
+          /** Legacy column — kept for backward compatibility. */
           phone: string | null;
+          /** Legacy column — kept for backward compatibility. */
           email: string | null;
           logo_url: string | null;
+          /** Phase 12C */
+          short_description: string | null;
+          street_address: string | null;
+          city: string | null;
+          state: string | null;
+          country: string | null;
+          postal_code: string | null;
+          google_maps_url: string | null;
+          primary_phone: string | null;
+          secondary_phone: string | null;
+          primary_email: string | null;
+          secondary_email: string | null;
+          whatsapp_number: string | null;
+          reservation_phone: string | null;
+          reservation_email: string | null;
+          website_url: string | null;
+          price_range: string | null;
+          cuisine_type: string | null;
+          established_year: string | null;
+          holiday_notice: string | null;
+          special_announcement: string | null;
+          reservation_message: string | null;
+          delivery_available: boolean;
+          takeaway_available: boolean;
+          outdoor_seating: boolean;
+          private_dining: boolean;
+          parking_available: boolean;
+          wheelchair_accessible: boolean;
+          pet_friendly: boolean;
           updated_at: string;
         };
         Insert: {
@@ -468,6 +549,34 @@ export interface Database {
           phone?: string | null;
           email?: string | null;
           logo_url?: string | null;
+          short_description?: string | null;
+          street_address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          country?: string | null;
+          postal_code?: string | null;
+          google_maps_url?: string | null;
+          primary_phone?: string | null;
+          secondary_phone?: string | null;
+          primary_email?: string | null;
+          secondary_email?: string | null;
+          whatsapp_number?: string | null;
+          reservation_phone?: string | null;
+          reservation_email?: string | null;
+          website_url?: string | null;
+          price_range?: string | null;
+          cuisine_type?: string | null;
+          established_year?: string | null;
+          holiday_notice?: string | null;
+          special_announcement?: string | null;
+          reservation_message?: string | null;
+          delivery_available?: boolean;
+          takeaway_available?: boolean;
+          outdoor_seating?: boolean;
+          private_dining?: boolean;
+          parking_available?: boolean;
+          wheelchair_accessible?: boolean;
+          pet_friendly?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["restaurant_info"]["Insert"]>;
@@ -479,15 +588,127 @@ export interface Database {
           id: string;
           copyright_text: string | null;
           tagline: string | null;
+          /** Phase 12D */
+          restaurant_name: string | null;
+          short_description: string | null;
+          copyright_year_auto: boolean;
+          copyright_year_manual: string | null;
+          designed_by_text: string | null;
+          designed_by_url: string | null;
+          show_logo: boolean;
+          show_description: boolean;
+          show_quick_links: boolean;
+          show_business_info: boolean;
+          show_newsletter: boolean;
+          show_social_icons: boolean;
+          show_legal: boolean;
+          show_copyright: boolean;
+          newsletter_title: string | null;
+          newsletter_subtitle: string | null;
+          newsletter_placeholder: string | null;
+          newsletter_button_text: string | null;
+          newsletter_success_msg: string | null;
+          newsletter_error_msg: string | null;
+          newsletter_consent_text: string | null;
+          newsletter_enabled: boolean;
+          social_icon_size: string;
+          social_icon_shape: string;
+          social_icon_style: string;
+          social_icon_alignment: string;
+          social_max_icons: number;
+          privacy_policy_url: string | null;
+          terms_url: string | null;
+          cookies_url: string | null;
+          refund_url: string | null;
+          accessibility_statement: string | null;
+          disclaimer: string | null;
+          license_text: string | null;
+          footer_layout: string;
+          background_color: string | null;
+          text_color: string | null;
+          accent_color: string | null;
+          border_style: string;
+          show_top_border: boolean;
+          show_divider: boolean;
+          container_width: string;
+          footer_enabled: boolean;
           updated_at: string;
         };
         Insert: {
           id?: string;
           copyright_text?: string | null;
           tagline?: string | null;
+          restaurant_name?: string | null;
+          short_description?: string | null;
+          copyright_year_auto?: boolean;
+          copyright_year_manual?: string | null;
+          designed_by_text?: string | null;
+          designed_by_url?: string | null;
+          show_logo?: boolean;
+          show_description?: boolean;
+          show_quick_links?: boolean;
+          show_business_info?: boolean;
+          show_newsletter?: boolean;
+          show_social_icons?: boolean;
+          show_legal?: boolean;
+          show_copyright?: boolean;
+          newsletter_title?: string | null;
+          newsletter_subtitle?: string | null;
+          newsletter_placeholder?: string | null;
+          newsletter_button_text?: string | null;
+          newsletter_success_msg?: string | null;
+          newsletter_error_msg?: string | null;
+          newsletter_consent_text?: string | null;
+          newsletter_enabled?: boolean;
+          social_icon_size?: string;
+          social_icon_shape?: string;
+          social_icon_style?: string;
+          social_icon_alignment?: string;
+          social_max_icons?: number;
+          privacy_policy_url?: string | null;
+          terms_url?: string | null;
+          cookies_url?: string | null;
+          refund_url?: string | null;
+          accessibility_statement?: string | null;
+          disclaimer?: string | null;
+          license_text?: string | null;
+          footer_layout?: string;
+          background_color?: string | null;
+          text_color?: string | null;
+          accent_color?: string | null;
+          border_style?: string;
+          show_top_border?: boolean;
+          show_divider?: boolean;
+          container_width?: string;
+          footer_enabled?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["footer_settings"]["Insert"]>;
+        Relationships: [];
+      };
+
+      quick_links: {
+        Row: {
+          id: string;
+          title: string;
+          url: string;
+          display_order: number;
+          open_new_tab: boolean;
+          is_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          url: string;
+          display_order?: number;
+          open_new_tab?: boolean;
+          is_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["quick_links"]["Insert"]>;
         Relationships: [];
       };
 
@@ -563,106 +784,6 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["seo_settings"]["Insert"]>;
-        Relationships: [];
-      };
-
-      site_settings: {
-        Row: {
-          id: string;
-          // General
-          website_name: string;
-          website_tagline: string | null;
-          website_description: string | null;
-          website_url: string | null;
-          default_language: string;
-          timezone: string;
-          business_currency: string;
-          theme_color: string | null;
-          primary_brand_color: string | null;
-          secondary_brand_color: string | null;
-          accent_color: string | null;
-          // SEO
-          meta_title: string;
-          meta_description: string;
-          meta_keywords: string | null;
-          canonical_url: string | null;
-          author: string | null;
-          publisher: string | null;
-          robots_meta: string;
-          google_verification: string | null;
-          bing_verification: string | null;
-          yandex_verification: string | null;
-          facebook_app_id: string | null;
-          twitter_username: string | null;
-          og_title: string | null;
-          og_description: string | null;
-          og_image_url: string | null;
-          twitter_card_type: string;
-          og_site_name: string | null;
-          og_type: string;
-          og_locale: string;
-          // Branding
-          favicon_url: string | null;
-          apple_touch_icon_url: string | null;
-          browser_theme_color: string | null;
-          background_color: string | null;
-          // Analytics
-          google_analytics_id: string | null;
-          google_analytics_enabled: boolean;
-          google_tag_manager_id: string | null;
-          google_tag_manager_enabled: boolean;
-          meta_pixel_id: string | null;
-          meta_pixel_enabled: boolean;
-          microsoft_clarity_id: string | null;
-          microsoft_clarity_enabled: boolean;
-          hotjar_id: string | null;
-          hotjar_enabled: boolean;
-          custom_header_script: string | null;
-          custom_body_script: string | null;
-          custom_footer_script: string | null;
-          // Search engine
-          allow_indexing: boolean;
-          generate_robots_txt: boolean;
-          generate_sitemap: boolean;
-          enable_structured_data: boolean;
-          enable_local_business_schema: boolean;
-          enable_faq_schema: boolean;
-          enable_organization_schema: boolean;
-          // PWA
-          enable_pwa: boolean;
-          pwa_app_name: string | null;
-          pwa_short_name: string | null;
-          pwa_theme_color: string | null;
-          pwa_background_color: string | null;
-          pwa_start_url: string;
-          pwa_display_mode: string;
-          pwa_offline_support: boolean;
-          // Feature toggles
-          enable_animations: boolean;
-          enable_scroll_to_top: boolean;
-          enable_cookie_banner: boolean;
-          enable_newsletter: boolean;
-          enable_reservation_system: boolean;
-          enable_contact_form: boolean;
-          enable_gallery: boolean;
-          enable_testimonials: boolean;
-          enable_chef_section: boolean;
-          enable_offers: boolean;
-          // Maintenance
-          maintenance_mode: boolean;
-          maintenance_title: string | null;
-          maintenance_message: string | null;
-          maintenance_image_url: string | null;
-          maintenance_expected_return: string | null;
-          allow_search_engines_during_maintenance: boolean;
-          updated_at: string;
-        };
-        Insert: Partial<Database["public"]["Tables"]["site_settings"]["Row"]> & {
-          website_name: string;
-          meta_title: string;
-          meta_description: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["site_settings"]["Insert"]>;
         Relationships: [];
       };
     };

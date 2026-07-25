@@ -1,159 +1,240 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, CalendarCheck } from "lucide-react";
-import type { MouseEvent } from "react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { createFileRoute } from "@tanstack/react-router";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { useState, useCallback } from "react";
 
-import { ReservationActionDialog } from "@/components/admin/reservations/ReservationActionDialog";
-import { ReservationRow } from "@/components/admin/reservations/ReservationRow";
+import { BulkActionsToolbar } from "@/components/admin/reservations/BulkActionsToolbar";
+import { ReservationDetailsDrawer } from "@/components/admin/reservations/ReservationDetailsDrawer";
+import { ReservationFiltersBar, ReservationSearch } from "@/components/admin/reservations/ReservationFilters";
+import { ReservationOverviewCards } from "@/components/admin/reservations/ReservationOverviewCards";
+import { ReservationStatusBadge } from "@/components/admin/reservations/ReservationStatusBadge";
 import { ReservationsSkeleton } from "@/components/admin/reservations/ReservationsSkeleton";
-import { EmptyState } from "@/components/admin/dashboard/EmptyState";
 import { Breadcrumbs } from "@/components/admin/page/Breadcrumbs";
 import { PageHeader } from "@/components/admin/page/PageHeader";
 import { SectionContainer } from "@/components/admin/page/SectionContainer";
 import { Button } from "@/components/common/Button";
-import { useDeleteReservation } from "@/hooks/useDeleteReservation";
-import { useReservations } from "@/hooks/useReservations";
-import type { ReservationDetail, ReservationItem } from "@/services/reservations.service";
+import { useReservationAnalytics } from "@/hooks/useReservationAnalytics";
+import { useReservationsV2 } from "@/hooks/useReservationsV2";
+import { useAuth } from "@/hooks/useAuth";
+import type {
+  ReservationFilters,
+  ReservationItemV2,
+  ReservationStatusValue,
+} from "@/services/reservations.service";
+import { updateReservationStatus, STATUS_LABELS, STATUS_TRANSITIONS_V2, TERMINAL_STATUSES } from "@/services/reservations.service";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/_authenticated/reservations/")({
   component: AdminReservationsPage,
-  head: () => ({
-    meta: [{ title: "Reservations — Admin — Taste Haven" }],
-  }),
+  head: () => ({ meta: [{ title: "Reservations — Admin — Taste Haven" }] }),
 });
 
-/** Maps a list item to the detail shape required by ReservationActionDialog. */
-function toReservationDetail(item: ReservationItem): ReservationDetail {
-  return {
-    ...item,
-    adminNotes: null,
-    updatedAt: item.createdAt,
-  };
-}
-
 function AdminReservationsPage() {
-  const { items, isLoading, error, refetch } = useReservations();
-  const navigate = useNavigate();
-  const { isDeleting, deleteItem } = useDeleteReservation();
-  const [reservationToDelete, setReservationToDelete] = useState<ReservationItem | null>(null);
+  const { user } = useAuth();
+  const adminUserId = user?.id ?? "";
 
-  function navigateToDetail(id: string) {
-    navigate({
-      to: "/admin/reservations/$reservationId",
-      params: { reservationId: id },
-    });
+  const [filters, setFilters] = useState<ReservationFilters>({ status: "all" });
+  const [search, setSearch] = useState("");
+  const [page] = useState(1);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [drawer, setDrawer] = useState<ReservationItemV2 | null>(null);
+
+  const effectiveFilters: ReservationFilters = { ...filters, search: search || undefined };
+  const { items, total, isLoading, error, refetch } = useReservationsV2(effectiveFilters, page, 100);
+  const { analytics, isLoading: analyticsLoading } = useReservationAnalytics();
+
+  const handleSearchChange = useCallback((v: string) => setSearch(v), []);
+  const handleFiltersChange = useCallback((f: ReservationFilters) => setFilters(f), []);
+
+  function toggleSelect(id: string) {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }
 
-  async function handleDeleteConfirm(e: MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-    if (!reservationToDelete) return;
+  function toggleSelectAll() {
+    setSelected((prev) =>
+      prev.length === items.length ? [] : items.map((i) => i.id),
+    );
+  }
 
-    const result = await deleteItem(reservationToDelete.id, reservationToDelete.status);
-
+  async function handleQuickStatus(r: ReservationItemV2, newStatus: ReservationStatusValue) {
+    const result = await updateReservationStatus(r.id, newStatus);
     if (!result.success) {
       toast.error(result.error.message);
-      return;
+    } else {
+      toast.success(`Marked as ${STATUS_LABELS[newStatus]}.`);
+      refetch();
     }
-
-    toast.success("Reservation deleted.");
-    setReservationToDelete(null);
-    refetch();
   }
 
   return (
     <div className="space-y-6">
       <Breadcrumbs page="Reservations" />
-      <PageHeader title="Reservations" description="View and manage guest reservations." />
+      <PageHeader
+        title="Reservations"
+        description="Manage all reservations, track status, and view analytics."
+        action={
+          <Button type="button" variant="outline-gold" onClick={refetch} className="gap-2 h-8 px-3 text-xs">
+            <RefreshCw className="size-3.5" />
+            Refresh
+          </Button>
+        }
+      />
+
+      {/* Overview cards */}
+      {!analyticsLoading && analytics && (
+        <ReservationOverviewCards analytics={analytics} />
+      )}
+
       <SectionContainer>
-        {isLoading ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <ReservationsTableHead />
-              <tbody>
-                <ReservationsSkeleton />
-              </tbody>
-            </table>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <div className="grid size-11 place-items-center rounded-full bg-destructive/10 text-destructive">
-              <AlertTriangle className="size-5" aria-hidden="true" />
-            </div>
-            <p className="text-sm font-medium text-foreground">Couldn&apos;t load reservations</p>
-            <p className="max-w-xs text-sm text-muted-foreground">{error.message}</p>
-            <Button
-              type="button"
-              variant="outline-gold"
-              onClick={refetch}
-              className="mt-1 px-4 py-2"
-            >
-              Try again
-            </Button>
-          </div>
-        ) : items.length === 0 ? (
-          <EmptyState
-            icon={CalendarCheck}
-            title="No reservations yet."
-            description="Reservations will appear here once guests start booking."
+        {/* Search + Filters */}
+        <div className="space-y-3">
+          <ReservationSearch value={search} onChange={handleSearchChange} />
+          <ReservationFiltersBar filters={filters} onChange={handleFiltersChange} />
+        </div>
+
+        {/* Bulk toolbar */}
+        <div className="mt-3">
+          <BulkActionsToolbar
+            selectedIds={selected}
+            adminUserId={adminUserId}
+            onClear={() => setSelected([])}
+            onRefetch={refetch}
           />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <ReservationsTableHead />
-              <tbody>
-                {items.map((reservation) => (
-                  <ReservationRow
-                    key={reservation.id}
-                    reservation={reservation}
-                    onView={navigateToDetail}
-                    onEdit={navigateToDetail}
-                    onDelete={setReservationToDelete}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        </div>
+
+        {/* Table */}
+        <div className="mt-4">
+          {isLoading ? (
+            <ReservationsSkeleton />
+          ) : error ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <AlertTriangle className="size-8 text-destructive" />
+              <p className="text-sm text-muted-foreground">{error.message}</p>
+              <Button type="button" variant="outline-gold" onClick={refetch}>Retry</Button>
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No reservations found.</p>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="w-10 px-3 py-2.5">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === items.length && items.length > 0}
+                        onChange={toggleSelectAll}
+                        aria-label="Select all"
+                        className="rounded border-border"
+                      />
+                    </th>
+                    <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Guest</th>
+                    <th className="hidden px-3 py-2.5 text-left text-xs font-medium text-muted-foreground sm:table-cell">Date & Time</th>
+                    <th className="hidden px-3 py-2.5 text-left text-xs font-medium text-muted-foreground md:table-cell">Guests</th>
+                    <th className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground">Status</th>
+                    <th className="hidden px-3 py-2.5 text-left text-xs font-medium text-muted-foreground lg:table-cell">Table</th>
+                    <th className="px-3 py-2.5 text-right text-xs font-medium text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {items.map((r) => {
+                    const transitions = STATUS_TRANSITIONS_V2[r.status as ReservationStatusValue] ?? [];
+                    const isTerminal = TERMINAL_STATUSES.includes(r.status as ReservationStatusValue);
+                    return (
+                      <tr
+                        key={r.id}
+                        className={`group transition-colors hover:bg-muted/40 ${selected.includes(r.id) ? "bg-primary/5" : ""}`}
+                      >
+                        <td className="px-3 py-2.5">
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(r.id)}
+                            onChange={() => toggleSelect(r.id)}
+                            aria-label={`Select ${r.customerName}`}
+                            className="rounded border-border"
+                          />
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setDrawer(r)}
+                            className="text-left"
+                          >
+                            <div className="font-medium hover:text-primary">{r.customerName}</div>
+                            <div className="text-xs text-muted-foreground">{r.phone}</div>
+                          </button>
+                        </td>
+                        <td className="hidden px-3 py-2.5 sm:table-cell">
+                          <div className="font-medium">{fmtDate(r.reservationDate)}</div>
+                          <div className="text-xs text-muted-foreground">{fmtTime(r.reservationTime)}</div>
+                        </td>
+                        <td className="hidden px-3 py-2.5 md:table-cell">{r.partySize}</td>
+                        <td className="px-3 py-2.5">
+                          <ReservationStatusBadge status={r.status as ReservationStatusValue} />
+                        </td>
+                        <td className="hidden px-3 py-2.5 lg:table-cell text-muted-foreground text-xs">
+                          {r.tableNumber ?? "—"}
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {!isTerminal && transitions.slice(0, 2).map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => handleQuickStatus(r, s)}
+                                className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium hover:bg-muted transition-colors"
+                              >
+                                {STATUS_LABELS[s]}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => setDrawer(r)}
+                              className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium hover:bg-muted transition-colors"
+                            >
+                              Details
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className="border-t border-border bg-muted/30 px-4 py-2.5 text-xs text-muted-foreground">
+                Showing {items.length} of {total} reservations
+              </div>
+            </div>
+          )}
+        </div>
       </SectionContainer>
 
-      <ReservationActionDialog
-        reservation={reservationToDelete ? toReservationDetail(reservationToDelete) : null}
-        action={reservationToDelete ? "delete" : null}
-        isLoading={isDeleting}
-        onOpenChange={(open) => !open && setReservationToDelete(null)}
-        onConfirm={handleDeleteConfirm}
-      />
+      {/* Drawer */}
+      {drawer && (
+        <ReservationDetailsDrawer
+          reservation={drawer}
+          adminUserId={adminUserId}
+          onClose={() => setDrawer(null)}
+          onRefetch={() => { refetch(); setDrawer(null); }}
+        />
+      )}
     </div>
   );
 }
 
-function ReservationsTableHead() {
-  return (
-    <thead>
-      <tr className="border-b border-border text-left">
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Customer
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap">
-          Date &amp; Time
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide text-center">
-          Guests
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Status
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
-          Request
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden xl:table-cell">
-          Received
-        </th>
-        <th className="px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide text-right">
-          Actions
-        </th>
-      </tr>
-    </thead>
-  );
+function fmtDate(d: string) {
+  return new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function fmtTime(t: string) {
+  const [hStr, mStr] = t.split(":");
+  const h = parseInt(hStr, 10);
+  const suffix = h >= 12 ? "PM" : "AM";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${mStr ?? "00"} ${suffix}`;
 }

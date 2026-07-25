@@ -58,33 +58,6 @@ export function Menu({ onAddToCart }: MenuProps) {
     gcTime: 5 * 60_000,
   });
 
-  // useReveal() (called once in routes/index.tsx) queries .reveal elements at
-  // mount time. Async items aren't in the DOM yet at that point, so their cards
-  // are never observed and .in is never added — leaving them at opacity:0.
-  // Re-observe after itemsData settles so newly rendered cards get .in added
-  // once they scroll into view (or are already in view).
-  useEffect(() => {
-    if (!itemsData || itemsData.length === 0) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) e.target.classList.add("in");
-      },
-      { threshold: 0.12 },
-    );
-
-    // Small rAF delay so React has committed the new cards to the DOM
-    const raf = requestAnimationFrame(() => {
-      const els = document.querySelectorAll<HTMLElement>(".reveal:not(.in)");
-      els.forEach((el) => io.observe(el));
-    });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      io.disconnect();
-    };
-  }, [itemsData]);
-
   const isLoading = itemsLoading || categoriesLoading;
 
   // "All" is always first; real categories come from the DB.
@@ -94,7 +67,7 @@ export function Menu({ onAddToCart }: MenuProps) {
   }, [categoriesData]);
 
   // Reset to "All" when categories reload and the current chip no longer exists.
-  useMemo(() => {
+  useEffect(() => {
     if (cat !== "All" && allChips.length > 1 && !allChips.includes(cat)) {
       setCat("All");
     }
@@ -110,6 +83,31 @@ export function Menu({ onAddToCart }: MenuProps) {
           (d.description ?? "").toLowerCase().includes(q)),
     );
   }, [itemsData, cat, search]);
+
+  // Re-observe .reveal elements after every filtered change so cards that
+  // enter the DOM when switching categories get .in added by the observer.
+  // Declared here — after filtered, isLoading, and itemsError are all in
+  // scope — to avoid the "Cannot access before initialization" ReferenceError.
+  useEffect(() => {
+    if (isLoading || itemsError) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) e.target.classList.add("in");
+      },
+      { threshold: 0.12 },
+    );
+
+    const raf = requestAnimationFrame(() => {
+      const els = document.querySelectorAll<HTMLElement>(".reveal:not(.in)");
+      els.forEach((el) => io.observe(el));
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [filtered, isLoading, itemsError]);
 
   return (
     <section id="menu" className="relative py-24 md:py-32">

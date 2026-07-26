@@ -712,6 +712,159 @@ export interface Database {
         Relationships: [];
       };
 
+      roles: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          color: string;
+          icon: string;
+          priority: number;
+          display_order: number;
+          is_system: boolean;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          color?: string;
+          icon?: string;
+          priority?: number;
+          display_order?: number;
+          is_system?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["roles"]["Insert"]>;
+        Relationships: [];
+      };
+
+      permission_groups: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          icon: string;
+          display_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          icon?: string;
+          display_order?: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["permission_groups"]["Insert"]>;
+        Relationships: [];
+      };
+
+      permissions: {
+        Row: {
+          id: string;
+          group_id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["permissions"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "permissions_group_id_fkey";
+            columns: ["group_id"];
+            referencedRelation: "permission_groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+
+      role_permissions: {
+        Row: {
+          id: string;
+          role_id: string;
+          permission_id: string;
+          granted_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          role_id: string;
+          permission_id: string;
+          granted_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["role_permissions"]["Insert"]>;
+        Relationships: [];
+      };
+
+      staff_roles: {
+        Row: {
+          id: string;
+          admin_user_id: string;
+          role_id: string;
+          is_primary: boolean;
+          expires_at: string | null;
+          assigned_by: string | null;
+          assigned_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_user_id: string;
+          role_id: string;
+          is_primary?: boolean;
+          expires_at?: string | null;
+          assigned_by?: string | null;
+          assigned_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["staff_roles"]["Insert"]>;
+        Relationships: [];
+      };
+
+      permission_audit_logs: {
+        Row: {
+          id: string;
+          action: string;
+          actor_id: string | null;
+          target_user_id: string | null;
+          role_id: string | null;
+          permission_id: string | null;
+          metadata: Record<string, unknown> | null;
+          ip_address: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          action: string;
+          actor_id?: string | null;
+          target_user_id?: string | null;
+          role_id?: string | null;
+          permission_id?: string | null;
+          metadata?: Record<string, unknown> | null;
+          ip_address?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["permission_audit_logs"]["Insert"]>;
+        Relationships: [];
+      };
+
       opening_hours: {
         Row: {
           id: string;

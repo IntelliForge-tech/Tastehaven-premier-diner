@@ -40,6 +40,7 @@ export type ReservationStatusValue =
   | "cancelled"
   | "no_show";
 
+
 export interface ReservationItem {
   id: string;
   customerName: string;
@@ -239,10 +240,6 @@ function mapUnexpectedErrorDetail(err: unknown): ReservationsServiceError {
 export const STATUS_TRANSITIONS: Record<ReservationStatusValue, ReservationStatusValue[]> = {
   pending: ["confirmed", "cancelled"],
   confirmed: ["completed", "cancelled"],
-  // include additional statuses to satisfy the ReservationStatusValue union
-  // transitions can be adjusted as business logic evolves
-  checked_in: [],
-  seated: [],
   completed: [],
   cancelled: [],
   no_show: [],
@@ -268,8 +265,8 @@ export async function updateReservationStatus(
   currentStatus: ReservationStatusValue,
   changedByUserId: string,
 ): Promise<UpdateReservationStatusResult> {
-  const allowed = STATUS_TRANSITIONS_V2[currentStatus] ?? [];
-  if (!(allowed ?? []).includes(newStatus)) {
+  const allowed = STATUS_TRANSITIONS[currentStatus];
+  if (!allowed.includes(newStatus)) {
     return {
       success: false,
       error: {

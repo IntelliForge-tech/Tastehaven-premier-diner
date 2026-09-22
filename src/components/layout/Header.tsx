@@ -9,6 +9,8 @@ interface HeaderProps {
   cartCount: number;
   flyKey: number;
   onNavigate: (id: string) => void;
+  /** Called when the bag/cart icon is clicked — opens the cart sheet. */
+  onCartOpen: () => void;
 }
 
 /**
@@ -16,7 +18,7 @@ interface HeaderProps {
  * and `mobileOpen` (hamburger menu) state, since neither is needed outside
  * this component. Identical markup/classes to the original inline header.
  */
-export function Header({ theme, onToggleTheme, cartCount, flyKey, onNavigate }: HeaderProps) {
+export function Header({ theme, onToggleTheme, cartCount, flyKey, onNavigate, onCartOpen }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -59,7 +61,11 @@ export function Header({ theme, onToggleTheme, cartCount, flyKey, onNavigate }: 
           >
             <i className={`fa-solid ${theme === "dark" ? "fa-sun" : "fa-moon"}`} />
           </button>
-          <div className="relative grid h-9 w-9 place-items-center rounded-full border border-border">
+          <button
+            aria-label={`Open cart${cartCount > 0 ? `, ${cartCount} item${cartCount !== 1 ? "s" : ""}` : ""}`}
+            onClick={onCartOpen}
+            className="relative grid h-9 w-9 place-items-center rounded-full border border-border hover:border-primary transition-colors"
+          >
             <i className="fa-solid fa-bag-shopping text-muted-foreground" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-foreground">
@@ -71,7 +77,7 @@ export function Header({ theme, onToggleTheme, cartCount, flyKey, onNavigate }: 
                 <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
               </span>
             )}
-          </div>
+          </button>
           <button onClick={() => handleNavigate("reserve")} className="hidden rounded-full px-5 py-2 text-sm font-medium btn-gold md:inline-flex">
             Reserve
           </button>

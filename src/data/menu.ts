@@ -19,12 +19,12 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const DISHES: Dish[] = [
-  { name: "Margherita Regina", category: "Pizza", desc: "San Marzano tomato, buffalo mozzarella, fresh basil.", price: 18, rating: 4.9, image: dishPizza },
-  { name: "Truffle Smash Burger", category: "Burgers", desc: "Double patty, aged cheddar, black truffle aioli.", price: 22, rating: 4.8, image: dishBurger },
-  { name: "Tagliatelle al Tartufo", category: "Pasta", desc: "Hand-rolled pasta, parmesan cream, black truffle.", price: 26, rating: 4.9, image: dishPasta },
-  { name: "Butter Chicken Royale", category: "Indian", desc: "Tandoor chicken, tomato-cashew gravy, saffron rice.", price: 24, rating: 4.7, image: dishIndian },
-  { name: "Kung Pao Chicken", category: "Chinese", desc: "Wok-fired chicken, chili, cashews, Sichuan pepper.", price: 21, rating: 4.6, image: dishChinese },
-  { name: "Molten Gold Cake", category: "Desserts", desc: "Warm chocolate lava, vanilla bean, 24k gold leaf.", price: 14, rating: 5.0, image: dishDessert },
-  { name: "Smoked Old Fashioned", category: "Drinks", desc: "Bourbon, bitters, applewood smoke, orange oil.", price: 16, rating: 4.8, image: dishDrinks },
-  { name: "Diavola Fuoco", category: "Pizza", desc: "Spicy salami, chili honey, smoked mozzarella.", price: 20, rating: 4.7, image: dishPizza },
+  { name: "Margherita Regina", category: "Pizza", desc: "San Marzano tomato, buffalo mozzarella, fresh basil.", price: 899, rating: 4.9, image: dishPizza },
+  { name: "Truffle Smash Burger", category: "Burgers", desc: "Double patty, aged cheddar, black truffle aioli.", price: 199, rating: 4.8, image: dishBurger },
+  { name: "Tagliatelle al Tartufo", category: "Pasta", desc: "Hand-rolled pasta, parmesan cream, black truffle.", price: 1299, rating: 4.9, image: dishPasta },
+  { name: "Butter Chicken Royale", category: "Indian", desc: "Tandoor chicken, tomato-cashew gravy, saffron rice.", price: 1399, rating: 4.7, image: dishIndian },
+  { name: "Kung Pao Chicken", category: "Chinese", desc: "Wok-fired chicken, chili, cashews, Sichuan pepper.", price: 849, rating: 4.6, image: dishChinese },
+  { name: "Molten Gold Cake", category: "Desserts", desc: "Warm chocolate lava, vanilla bean, 24k gold leaf.", price: 599, rating: 5.0, image: dishDessert },
+  { name: "Smoked Old Fashioned", category: "Drinks", desc: "Bourbon, bitters, applewood smoke, orange oil.", price: 650, rating: 4.8, image: dishDrinks },
+  { name: "Diavola Fuoco", category: "Pizza", desc: "Spicy salami, chili honey, smoked mozzarella.", price: 849, rating: 4.7, image: dishPizza },
 ];

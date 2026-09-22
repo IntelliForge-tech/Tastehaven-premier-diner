@@ -16,6 +16,12 @@ import { Menu } from "@/components/sections/Menu";
 import { Offers } from "@/components/sections/Offers";
 import { Reservation } from "@/components/sections/Reservation";
 import { Testimonials } from "@/components/sections/Testimonials";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useReveal } from "@/hooks/useReveal";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -35,7 +41,8 @@ export const Route = createFileRoute("/")({
  * Page orchestrator: composes the layout and section components, and owns
  * the small slice of state that is genuinely shared between them:
  *  - theme (Header toggles it, Toaster reads it)
- *  - cart/flyKey (Menu increments it, Header displays it)
+ *  - cartItems/flyKey (Menu increments it, Header displays badge + opens sheet)
+ *  - isCartOpen (Header bag button opens it, Sheet onOpenChange closes it)
  *  - scrollTo (used by Header, Hero, Footer, and the section anchors)
  * Every other piece of state (menu filters, gallery lightbox, testimonial
  * index, FAQ accordion, reservation form, mobile nav, scroll thresholds)
@@ -43,13 +50,14 @@ export const Route = createFileRoute("/")({
  */
 function TasteHaven() {
   const { theme, setTheme } = useTheme("dark");
-  const [cart, setCart] = useState(0);
+  const [cartItems, setCartItems] = useState<string[]>([]);
   const [flyKey, setFlyKey] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useReveal();
 
   const addToCart = (name: string) => {
-    setCart((c) => c + 1);
+    setCartItems((prev) => [...prev, name]);
     setFlyKey((k) => k + 1);
     toast.success(`${name} added to cart`);
   };
@@ -58,17 +66,56 @@ function TasteHaven() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Aggregate duplicate item names into counts for the sheet display
+  const cartSummary = cartItems.reduce<Record<string, number>>((acc, name) => {
+    acc[name] = (acc[name] ?? 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Toaster theme={theme} richColors position="top-right" />
+      <Toaster theme={theme} richColors position="top-right" offset="72px" />
 
       <Header
         theme={theme}
         onToggleTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
-        cartCount={cart}
+        cartCount={cartItems.length}
         flyKey={flyKey}
         onNavigate={scrollTo}
+        onCartOpen={() => setIsCartOpen(true)}
       />
+
+      {/* Cart sheet — opened by the header bag icon */}
+      <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Your Order</SheetTitle>
+          </SheetHeader>
+
+          {cartItems.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Your cart is empty.
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col gap-4 overflow-y-auto py-4">
+              <ul className="space-y-3">
+                {Object.entries(cartSummary).map(([name, qty]) => (
+                  <li
+                    key={name}
+                    className="flex items-center justify-between rounded-lg border border-border px-4 py-3 text-sm"
+                  >
+                    <span className="font-medium">{name}</span>
+                    <span className="text-muted-foreground">× {qty}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto border-t border-border pt-4 text-sm text-muted-foreground">
+                {cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in your order
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       <Hero onNavigate={scrollTo} />
       <About />

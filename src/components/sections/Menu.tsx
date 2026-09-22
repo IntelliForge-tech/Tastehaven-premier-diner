@@ -74,7 +74,7 @@ export function Menu({ onAddToCart }: MenuProps) {
               <div className="p-5">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-lg">{d.name}</h3>
-                  <span className="font-display text-primary">${d.price}</span>
+                  <span className="font-display text-primary">₹{d.price.toLocaleString("en-IN")}</span>
                 </div>
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{d.desc}</p>
                 <button
